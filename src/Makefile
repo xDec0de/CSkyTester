@@ -30,7 +30,8 @@ TEST_SRC := $(shell find $(TESTS_DIR) -type f -name '*.c')
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-TEST_INC = -I$(CURDIR)
+CFLAGS ?= -Wall -Werror -Wextra
+CFLAGS += -I$(CURDIR)
 
 $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 	@mkdir -p $(dir $@)
@@ -54,7 +55,7 @@ all: $(OBJS)
 			EXEC="$(LOG_DIR)/$$BASENAME.bin"; \
 			LOG="$(LOG_DIR)/$$BASENAME.valgrind"; \
 			ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
-			COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC $(TEST_INC) -lreadline 2>&1); \
+			COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC 2>&1); \
 			if [ $$? -ne 0 ]; then \
 				printf "❌ $(RED)Failed to compile test $(BRED)%s$(GRAY):$(RES)\n" "$$BASENAME"; \
 				echo "$$COMPILE_OUTPUT"; \
