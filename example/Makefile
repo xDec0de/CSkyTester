@@ -1,17 +1,23 @@
 
+# > ~ Avoid "Entering / Leaving directory" messages (Optional)
+
+MAKEFLAGS += --no-print-directory
+
 # > ~ Define CSkyTester directory
 
 TESTER_DIR = ../src
 
-# > ~ Define project sources
+# > ~ Define project directory, USE CUDIR TO AVOID ISSUES.
 
-SRCS = ./src/example.c
+SRCS_DIR = $(CURDIR)/src
 
-# > ~ Define tests directory (All .c files will be used as tests)
+# > ~ Define tests directory, USE CUDIR TO AVOID ISSUES.
 
-TEST_DIR = ./test
+TEST_DIR = $(CURDIR)/test
 
 # > ~ Call CSkyTester's Makefile
 
 test:
-	$(MAKE) -C $(TESTER_DIR) PROJ_SRCS="$(SRCS)" TESTS_DIR="$(TEST_DIR)"
+	@$(MAKE) -C $(TESTER_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)"
+
+.PHONY: test
