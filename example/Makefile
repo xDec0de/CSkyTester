@@ -7,11 +7,11 @@ MAKEFLAGS += --no-print-directory
 
 TESTER_DIR = ../src
 
-# > ~ Define project directory, USE CUDIR TO AVOID ISSUES.
+# > ~ Define project directory, USE CURDIR TO AVOID ISSUES.
 
 SRCS_DIR = $(CURDIR)/src
 
-# > ~ Define tests directory, USE CUDIR TO AVOID ISSUES.
+# > ~ Define tests directory, USE CURDIR TO AVOID ISSUES.
 
 TEST_DIR = $(CURDIR)/test
 

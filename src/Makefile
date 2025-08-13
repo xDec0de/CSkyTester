@@ -44,6 +44,8 @@ $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 			exit 1;\
 		fi;\
 	}
+	@echo -n "\r✅ $(GREEN)Successfully compiled project files$(RES)"
+	@echo 
 
 all: $(OBJS)
 	@mkdir -p $(LOG_DIR)
