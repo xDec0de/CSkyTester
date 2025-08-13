@@ -22,8 +22,9 @@ BBLUE = \033[1;36m
 GRAY = \033[0;30m
 RES = \033[0m                                                                   
 
-LOG_DIR = $(TESTS_DIR)/sky_logs
-OBJ_DIR = $(TESTS_DIR)/objs
+CST_DIR = $(TESTS_DIR)/cst
+LOG_DIR = $(CST_DIR)/logs
+OBJ_DIR = $(CST_DIR)/objs
 
 TEST_SRC := $(shell find $(TESTS_DIR) -type f -name '*.c')
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
@@ -91,3 +92,8 @@ all: $(OBJS)
 		echo "$(RED)❌ $$FAILED test(s) failed.$(RES)"; \
 		exit 1; \
 	fi
+
+clean:
+	@rm -rf $(CST_DIR)
+
+.PHONY: all clean
