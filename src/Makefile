@@ -52,6 +52,7 @@ all: $(OBJS)
 	@FAILED=0; \
 	TESTFILES="$(TEST_SRC)"; \
 	CURRENT_CAT=""; \
+	CURRENT_INDENT=""; \
 	for FILE in $$TESTFILES; do \
 		BASENAME=$$(basename $$FILE .c); \
 		DIRNAME=$$(dirname $$FILE); \
@@ -70,16 +71,18 @@ all: $(OBJS)
 			continue; \
 		fi; \
 		if [ "$$CATNAME" != "" ] && [ "$$CURRENT_CAT" != "$$CATNAME" ]; then \
-			if [ "$$CURRENT_CAT" != "" ]; then \
-				printf "\n"; \
-			fi; \
-			printf "$(BBLUE)%s$(GRAY):$(RES)\n" "$$CATNAME"; \
+			printf "\n📁 $(BBLUE)%s$(GRAY):$(RES)\n" "$$CATNAME"; \
 			CURRENT_CAT="$$CATNAME"; \
 		fi; \
 		OUTPUT=$$($$EXEC 2>&1); \
 		STATUS=$$?; \
 		if [ "$$CATNAME" != "" ]; then \
-			printf -- "- %s\n" "$$OUTPUT"; \
+			if [ "$$FILE" = "$$(ls $$DIRNAME/*.c | tail -n1)" ]; then \
+				PREFIX="└──"; \
+			else \
+				PREFIX="├──"; \
+			fi; \
+			printf "%s %s\n" "$$PREFIX" "$$OUTPUT"; \
 		else \
 			printf "%s\n" "$$OUTPUT"; \
 		fi; \
@@ -88,9 +91,9 @@ all: $(OBJS)
 		fi; \
 	done; \
 	if [ $$FAILED -eq 0 ]; then \
-		echo "✅ $(GREEN)All tests passed!$(RES)"; \
+		echo "\n✅ $(GREEN)All tests passed!$(RES)"; \
 	else \
-		echo "❌ $(RED)$$FAILED test(s) failed.$(RES)"; \
+		echo "\n❌ $(RED)$$FAILED test(s) failed.$(RES)"; \
 		exit 1; \
 	fi
 
