@@ -33,6 +33,7 @@ char *CST_FAIL_TIP = NULL;
 #define CST_ASSERT(expr, func, msg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
+		fprintf(stderr, "%s passed", CST_TEST_NAME);\
 		break ;\
 	}\
 	fprintf(stderr, "%s failed: ", CST_TEST_NAME);\

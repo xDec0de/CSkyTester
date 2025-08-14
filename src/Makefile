@@ -71,7 +71,9 @@ all: $(OBJS)
 			fi; \
 			STATUS=$$?; \
 			if [ $$STATUS -eq 0 ]; then \
-				printf "✅ $(GREEN)%s passed$(RES)\n" "$$BASENAME"; \
+				printf "✅ $(GREEN)"; \
+				cat $$ERR; \
+				printf "$(RES)\n"; \
 			elif [ $$STATUS -eq 123 ]; then \
 				printf "⚠️  $(BYLW)%s passed but has memory leaks$(RES)\n" "$$BASENAME"; \
 				FAILED=$$((FAILED + 1)); \
