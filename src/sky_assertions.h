@@ -14,16 +14,21 @@
  * used to provide detailed assertion fail descriptions to help
  * the developer fix the issue.
  */
-char *__CST_FAIL_TIP__ = NULL;
+char *CST_FAIL_TIP = NULL;
 
 /*
- - Fail trigger macro
+ - Internal assertion logic
  */
 
-#define CST_FAIL(expr, msg) do {\
-	fprintf(stderr, msg, #expr);\
-	if (__CST_FAIL_TIP__ != NULL)\
-		fprintf(stderr, "\n   - %s", __CST_FAIL_TIP__);\
+#define CST_ASSERT(expr, func, msg) do {\
+	if ((expr)) {\
+		CST_FAIL_TIP = NULL;\
+		break ;\
+	}\
+	fprintf(stderr, msg, #func);\
+	if (CST_FAIL_TIP != NULL)\
+		fprintf(stderr, "\n   - %s", CST_FAIL_TIP);\
+	CST_FAIL_TIP = NULL;\
 	exit(EXIT_FAILURE);\
 } while (0)
 
@@ -31,16 +36,20 @@ char *__CST_FAIL_TIP__ = NULL;
  - Assertions - Bool
  */
 
-#define ASSERT_TRUE(expr) do {\
-	if (!(expr))\
-		CST_FAIL(#expr, "Got FALSE when expecting TRUE from %s");\
-	__CST_FAIL_TIP__ = NULL;\
-} while (0)
+/**
+ * @brief Asserts that the provided `expr`ession is `true`.
+ * If `expr` evaluates to `false`, the test will fail.
+ * 
+ * @param expr The expression to evaluate (Generally just a function call).
+ */
+#define ASSERT_TRUE(expr) CST_ASSERT(expr, expr, "Got FALSE when expecting TRUE from %s");
 
-#define ASSERT_FALSE(expr) do {\
-	if ((expr))\
-		CST_FAIL(#expr, "Got TRUE when expecting FALSE from %s");\
-	__CST_FAIL_TIP__ = NULL;\
-} while (0)
+/**
+ * @brief Asserts that the provided `expr`ession is `false`.
+ * If `expr` evaluates to `true`, the test will fail.
+ * 
+ * @param expr The expression to evaluate (Generally just a function call).
+ */
+#define ASSERT_FALSE(expr) CST_ASSERT(!expr, expr, "Got TRUE when expecting FALSE from %s");
 
 #endif
