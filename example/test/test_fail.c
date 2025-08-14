@@ -3,10 +3,7 @@
 
 #define CST_TEST_NAME "No category test"
 #include "cst_assertions.h"
-
-#include <stdbool.h>
-
-bool	cst_isnum(char ch);
+#include "cst_example.h"
 
 int	main(void)
 {

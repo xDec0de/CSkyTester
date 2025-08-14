@@ -15,10 +15,14 @@ SRCS_DIR = $(CURDIR)/src
 
 TEST_DIR = $(CURDIR)/test
 
+# > ~ Extra CFLAGS for compilation
+
+EXTRA_CFLAGS = -Wall -Werror -Wextra -I$(CURDIR)/inc
+
 # > ~ Call CSkyTester's Makefile
 
 test:
-	@$(MAKE) -C $(TESTER_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)"
+	@$(MAKE) -C $(TESTER_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)" EXTRA_CFLAGS="$(EXTRA_CFLAGS)"
 
 # > ~ (Optional) Call CSkyTester's clean task
 

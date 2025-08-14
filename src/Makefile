@@ -31,8 +31,7 @@ TEST_SRC := $(shell find $(TESTS_DIR) -type f -name '*.c')
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS ?= -Wall -Werror -Wextra
-CFLAGS += -I$(CURDIR)
+CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR)
 
 $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 	@mkdir -p $(dir $@)
