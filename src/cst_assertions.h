@@ -68,7 +68,23 @@ char *CST_FAIL_TIP = NULL;
 #define ASSERT_FALSE(expr) CST_ASSERT(!expr, expr, fprintf(stderr, "Got TRUE when expecting FALSE"));
 
 /*
- - Assertions - Numeric
+ - Assertions - Char
+ */
+
+#define ASSERT_CHAR_EQUALS(expr, expected) do {\
+	char cst_actual = (expr);\
+	char cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got '%c' when expecting '%c'", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_UCHAR_EQUALS(expr, expected) do {\
+	unsigned char cst_actual = (expr);\
+	unsigned char cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got '%u' when expecting '%u'", cst_actual, cst_expected));\
+} while (0)
+
+/*
+ - Assertions - Int
  */
 
 #define ASSERT_INT_EQUALS(expr, expected) do {\
