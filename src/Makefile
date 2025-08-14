@@ -57,7 +57,7 @@ all: $(OBJS)
 			EXEC="$(LOG_DIR)/$$BASENAME.bin"; \
 			LOG="$(LOG_DIR)/$$BASENAME.valgrind"; \
 			ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
-			COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC 2>&1); \
+			COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -DCST_FILE="\"$$BASENAME\"" -o $$EXEC 2>&1); \
 			if [ $$? -ne 0 ]; then \
 				printf "❌ $(RED)Failed to compile test $(BRED)%s$(GRAY):$(RES)\n" "$$BASENAME"; \
 				echo "$$COMPILE_OUTPUT"; \
@@ -76,7 +76,7 @@ all: $(OBJS)
 				printf "⚠️  $(BYLW)%s passed but has memory leaks$(RES)\n" "$$BASENAME"; \
 				FAILED=$$((FAILED + 1)); \
 			elif [ $$STATUS -gt 0 ] && [ $$STATUS -lt 128 ]; then \
-				printf "❌ $(RED)%s test failed$(GRAY):$(RED) " "$$BASENAME"; \
+				printf "❌ $(RED)"; \
 				cat $$ERR; \
 				printf "$(RES)\n"; \
 				FAILED=$$((FAILED + 1)); \

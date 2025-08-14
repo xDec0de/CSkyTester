@@ -1,4 +1,9 @@
+
+// The definition of CST_TEST_NAME MUST be BEFORE including cst_assertions.h
+
+#define CST_TEST_NAME "Example test name"
 #include "cst_assertions.h"
+
 #include <stdbool.h>
 
 bool	sky_isnum(char ch);

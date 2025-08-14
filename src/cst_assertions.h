@@ -7,6 +7,16 @@
 /* exit */
 #include <stdlib.h>
 
+/* Custom test name macros with fallback */
+
+#ifndef CST_FILE
+# define CST_FILE "???"
+#endif
+
+#ifndef CST_TEST_NAME
+# define CST_TEST_NAME CST_FILE
+#endif
+
 /* Global variables for configuration */
 
 /**
@@ -25,6 +35,7 @@ char *CST_FAIL_TIP = NULL;
 		CST_FAIL_TIP = NULL;\
 		break ;\
 	}\
+	fprintf(stderr, "%s failed: ", CST_TEST_NAME);\
 	fprintf(stderr, msg, #func);\
 	if (CST_FAIL_TIP != NULL)\
 		fprintf(stderr, "\n   - %s", CST_FAIL_TIP);\
