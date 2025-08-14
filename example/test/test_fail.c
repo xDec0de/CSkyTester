@@ -6,10 +6,10 @@
 
 #include <stdbool.h>
 
-bool	sky_isnum(char ch);
+bool	cst_isnum(char ch);
 
 int	main(void)
 {
 	CST_FAIL_TIP = "Test failed intentionally";
-	ASSERT_FALSE(sky_isnum('1'));
+	ASSERT_FALSE(cst_isnum('1'));
 }

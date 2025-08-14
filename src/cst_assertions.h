@@ -35,10 +35,10 @@ char *CST_FAIL_TIP = NULL;
 #define CST_ASSERT(expr, func, msg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
-		fprintf(stderr, CST_GREEN"%s passed"CST_RES, CST_TEST_NAME);\
+		fprintf(stderr, CST_GREEN"✅ %s"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
-	fprintf(stderr, CST_RED"%s failed"CST_GRAY": "CST_RED, CST_TEST_NAME);\
+	fprintf(stderr, CST_RED"❌ %s"CST_GRAY": "CST_RED, CST_TEST_NAME);\
 	fprintf(stderr, msg, #func);\
 	if (CST_FAIL_TIP != NULL)\
 		fprintf(stderr, CST_GRAY" - "CST_RED"%s"CST_RES, CST_FAIL_TIP);\
