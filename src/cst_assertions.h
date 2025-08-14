@@ -32,14 +32,15 @@ char *CST_FAIL_TIP = NULL;
  - Internal assertion logic
  */
 
-#define CST_ASSERT(expr, func, msg) do {\
+#define CST_ASSERT(expr, func, errmsg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
 		fprintf(stderr, CST_GREEN"✅ %s"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
 	fprintf(stderr, CST_RED"❌ %s"CST_GRAY": "CST_RED, CST_TEST_NAME);\
-	fprintf(stderr, msg, #func);\
+	errmsg;\
+	fprintf(stderr, " from %s", #func);\
 	if (CST_FAIL_TIP != NULL)\
 		fprintf(stderr, CST_GRAY" - "CST_RED"%s"CST_RES, CST_FAIL_TIP);\
 	CST_FAIL_TIP = NULL;\
@@ -56,7 +57,7 @@ char *CST_FAIL_TIP = NULL;
  * 
  * @param expr The expression to evaluate (Generally just a function call).
  */
-#define ASSERT_TRUE(expr) CST_ASSERT(expr, expr, "Got FALSE when expecting TRUE from %s");
+#define ASSERT_TRUE(expr) CST_ASSERT(expr, expr, fprintf(stderr, "Got FALSE when expecting TRUE"));
 
 /**
  * @brief Asserts that the provided `expr`ession is `false`.
@@ -64,6 +65,16 @@ char *CST_FAIL_TIP = NULL;
  * 
  * @param expr The expression to evaluate (Generally just a function call).
  */
-#define ASSERT_FALSE(expr) CST_ASSERT(!expr, expr, "Got TRUE when expecting FALSE from %s");
+#define ASSERT_FALSE(expr) CST_ASSERT(!expr, expr, fprintf(stderr, "Got TRUE when expecting FALSE"));
+
+/*
+ - Assertions - Numeric
+ */
+
+#define ASSERT_INT_EQUALS(expr, expected) do {\
+	int cst_aie_actual = (expr);\
+	int cst_aie_expected = (expected);\
+	CST_ASSERT(cst_aie_actual == cst_aie_expected, expr, fprintf(stderr, "Got %i when expecting %i", cst_aie_actual, cst_aie_expected));\
+} while (0)
 
 #endif
