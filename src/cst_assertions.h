@@ -72,9 +72,15 @@ char *CST_FAIL_TIP = NULL;
  */
 
 #define ASSERT_INT_EQUALS(expr, expected) do {\
-	int cst_aie_actual = (expr);\
-	int cst_aie_expected = (expected);\
-	CST_ASSERT(cst_aie_actual == cst_aie_expected, expr, fprintf(stderr, "Got %i when expecting %i", cst_aie_actual, cst_aie_expected));\
+	int cst_actual = (expr);\
+	int cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %i when expecting %i", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_UINT_EQUALS(expr, expected) do {\
+	unsigned int cst_actual = (expr);\
+	unsigned int cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %u when expecting %u", cst_actual, cst_expected));\
 } while (0)
 
 #endif
