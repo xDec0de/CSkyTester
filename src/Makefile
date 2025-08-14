@@ -20,7 +20,8 @@ BYLW = \033[1;33m
 BLUE = \033[0;36m
 BBLUE = \033[1;36m
 GRAY = \033[0;30m
-RES = \033[0m                                                                   
+RES = \033[0m
+RES_R = $(RES)                                                                   
 
 CST_DIR = $(TESTS_DIR)/cst
 LOG_DIR = $(CST_DIR)/logs
@@ -35,66 +36,62 @@ CFLAGS += -I$(CURDIR)
 
 $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 	@mkdir -p $(dir $@)
-	@echo -n "\r⏳ $(YLW)Compiling $(BYLW)$(notdir $<)$(GRAY)...$(RES)"
+	@echo -n "\r⏳ $(YLW)Compiling $(BYLW)$(notdir $<)$(GRAY)...$(RES_R)"
 	@{\
 		ERR=$$( ($(CC) $(CFLAGS) -c $< -o $@) 2>&1 );\
 		if [ $$? -ne 0 ]; then\
-			echo -n "\r❌ $(RED)Failed to compile $(BRED)$@$(GRAY):$(RES)";\
+			echo -n "\r❌ $(RED)Failed to compile $(BRED)$@$(GRAY):$(RES_R)";\
 			echo "\n$$ERR";\
 			exit 1;\
 		fi;\
 	}
-	@echo -n "\r✅ $(GREEN)Successfully compiled project files$(RES)"
+	@echo -n "\r✅ $(GREEN)Successfully compiled project files$(RES_R)"
 	@echo 
 
 all: $(OBJS)
 	@mkdir -p $(LOG_DIR)
 	@FAILED=0; \
 	TESTFILES="$(TEST_SRC)"; \
+	CURRENT_CAT=""; \
 	for FILE in $$TESTFILES; do \
 		BASENAME=$$(basename $$FILE .c); \
-		if echo $$BASENAME | grep -q "^test_"; then \
-			EXEC="$(LOG_DIR)/$$BASENAME.bin"; \
-			LOG="$(LOG_DIR)/$$BASENAME.valgrind"; \
-			ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
-			COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -DCST_FILE="\"$$BASENAME\"" -o $$EXEC 2>&1); \
-			if [ $$? -ne 0 ]; then \
-				printf "❌ $(RED)Failed to compile test $(BRED)%s$(GRAY):$(RES)\n" "$$BASENAME"; \
-				echo "$$COMPILE_OUTPUT"; \
-				FAILED=$$((FAILED + 1)); \
-				continue; \
+		DIRNAME=$$(dirname $$FILE); \
+		if [ -f "$$DIRNAME/cname" ]; then \
+			CATNAME=$$(cat "$$DIRNAME/cname"); \
+		else \
+			CATNAME=""; \
+		fi; \
+		EXEC="$(LOG_DIR)/$$BASENAME.bin"; \
+		ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
+		COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC 2>&1); \
+		if [ $$? -ne 0 ]; then \
+			printf "❌ Failed to compile test %s\n" "$$BASENAME"; \
+			echo "$$COMPILE_OUTPUT"; \
+			FAILED=$$((FAILED + 1)); \
+			continue; \
+		fi; \
+		if [ "$$CATNAME" != "" ] && [ "$$CURRENT_CAT" != "$$CATNAME" ]; then \
+			if [ "$$CURRENT_CAT" != "" ]; then \
+				printf "\n"; \
 			fi; \
-			if echo "$$BASENAME" | grep -q "_vg$$"; then \
-				valgrind --leak-check=full --error-exitcode=123 --log-file="$$LOG" $$EXEC 2> $$ERR; \
-			else \
-				$$EXEC 2> $$ERR; \
-			fi; \
-			STATUS=$$?; \
-			if [ $$STATUS -eq 0 ]; then \
-				printf "✅ $(GREEN)"; \
-				cat $$ERR; \
-				printf "$(RES)\n"; \
-			elif [ $$STATUS -eq 123 ]; then \
-				printf "⚠️  $(BYLW)%s passed but has memory leaks$(RES)\n" "$$BASENAME"; \
-				FAILED=$$((FAILED + 1)); \
-			elif [ $$STATUS -gt 0 ] && [ $$STATUS -lt 128 ]; then \
-				printf "❌ $(RED)"; \
-				cat $$ERR; \
-				printf "$(RES)\n"; \
-				FAILED=$$((FAILED + 1)); \
-			else \
-				SIGNAL=$$(( $$STATUS - 128 )); \
-				printf "💥 $(BRED)%s crashed with signal %d$(RES)\n" "$$BASENAME" "$$SIGNAL"; \
-				FAILED=$$((FAILED + 1)); \
-			fi; \
-			rm -f $$ERR; \
+			printf "$(BBLUE)%s$(GRAY):$(RES)\n" "$$CATNAME"; \
+			CURRENT_CAT="$$CATNAME"; \
+		fi; \
+		OUTPUT=$$($$EXEC 2>&1); \
+		STATUS=$$?; \
+		if [ "$$CATNAME" != "" ]; then \
+			printf -- "- %s\n" "$$OUTPUT"; \
+		else \
+			printf "%s\n" "$$OUTPUT"; \
+		fi; \
+		if [ $$STATUS -ne 0 ]; then \
+			FAILED=$$((FAILED + 1)); \
 		fi; \
 	done; \
-	rm -rf $(LOG_DIR)/*.bin; \
 	if [ $$FAILED -eq 0 ]; then \
-		echo "$(GREEN)✅ All tests passed!$(RES)"; \
+		echo "✅ $(GREEN)All tests passed!$(RES)"; \
 	else \
-		echo "$(RED)❌ $$FAILED test(s) failed.$(RES)"; \
+		echo "❌ $(RED)$$FAILED test(s) failed.$(RES)"; \
 		exit 1; \
 	fi
 

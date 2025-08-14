@@ -1,5 +1,7 @@
-#ifndef SKY_ASSERTIONS_H
-# define SKY_ASSERTIONS_H
+#ifndef CST_ASSERTIONS_H
+# define CST_ASSERTIONS_H
+
+#include "cst_color.h"
 
 /* stdout & fprintf */
 #include <stdio.h>
@@ -33,13 +35,13 @@ char *CST_FAIL_TIP = NULL;
 #define CST_ASSERT(expr, func, msg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
-		fprintf(stderr, "%s passed", CST_TEST_NAME);\
+		fprintf(stderr, CST_GREEN"%s passed"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
-	fprintf(stderr, "%s failed: ", CST_TEST_NAME);\
+	fprintf(stderr, CST_RED"%s failed"CST_GRAY": "CST_RED, CST_TEST_NAME);\
 	fprintf(stderr, msg, #func);\
 	if (CST_FAIL_TIP != NULL)\
-		fprintf(stderr, "\n   - %s", CST_FAIL_TIP);\
+		fprintf(stderr, CST_GRAY" - "CST_RED"%s"CST_RES, CST_FAIL_TIP);\
 	CST_FAIL_TIP = NULL;\
 	exit(EXIT_FAILURE);\
 } while (0)
