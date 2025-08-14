@@ -27,7 +27,7 @@ CST_DIR = $(TESTS_DIR)/cst
 LOG_DIR = $(CST_DIR)/logs
 OBJ_DIR = $(CST_DIR)/objs
 
-TEST_SRC := $(shell find $(TESTS_DIR) -type f -name '*.c')
+TEST_SRC := $(shell find $(TESTS_DIR) -type f -name '*.c' | sort)
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
