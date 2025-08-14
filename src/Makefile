@@ -97,6 +97,11 @@ all: $(OBJS)
 	fi
 
 clean:
-	@rm -rf $(CST_DIR)
+	@if [ -d "$(CST_DIR)" ]; then \
+		rm -rf "$(CST_DIR)"; \
+		echo "\r✅ $(GREEN)Successfully cleaned test files$(RES)"; \
+	else \
+		echo "\r✅ $(GREEN)No test files left to clean. Just double checking I guess?$(RES)"; \
+	fi
 
 .PHONY: all clean
