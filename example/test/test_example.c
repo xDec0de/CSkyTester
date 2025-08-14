@@ -5,6 +5,6 @@ bool	sky_isnum(char ch);
 
 int	main(void)
 {
-	ASSERT_TRUE(sky_isnum('0'));
-	ASSERT_FALSE(sky_isnum('a'));
+	__CST_FAIL_TIP__ = "Test failed intentionally to test format";
+	ASSERT_FALSE(sky_isnum('1'));
 }

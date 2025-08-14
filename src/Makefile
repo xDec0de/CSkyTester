@@ -76,7 +76,7 @@ all: $(OBJS)
 				printf "⚠️  $(BYLW)%s passed but has memory leaks$(RES)\n" "$$BASENAME"; \
 				FAILED=$$((FAILED + 1)); \
 			elif [ $$STATUS -gt 0 ] && [ $$STATUS -lt 128 ]; then \
-				printf "❌ $(RED)%s failed test #%d$(GRAY):$(RED) " "$$BASENAME" "$$STATUS"; \
+				printf "❌ $(RED)%s test failed$(GRAY):$(RED) " "$$BASENAME"; \
 				cat $$ERR; \
 				printf "$(RES)\n"; \
 				FAILED=$$((FAILED + 1)); \
