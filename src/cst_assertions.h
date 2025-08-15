@@ -25,11 +25,14 @@
  * @brief The tip to display if the next assertion fails. This can be
  * used to provide detailed assertion fail descriptions to help
  * the developer fix the issue.
+ * 
+ * This will reset back to `NULL` once any assertion occurs, no
+ * matter if it fails or passes.
  */
 char *CST_FAIL_TIP = NULL;
 
 /*
- - Internal assertion logic
+ - Shared assertion logic
  */
 
 #define CST_ASSERT(expr, func, errmsg) do {\
@@ -46,6 +49,14 @@ char *CST_FAIL_TIP = NULL;
 	CST_FAIL_TIP = NULL;\
 	exit(EXIT_FAILURE);\
 } while (0)
+
+/*
+ - Assertions - NULL */
+
+#define ASSERT_NULL(expr) CST_ASSERT(expr == NULL, expr, fprintf(stderr, "Got NOT NULL when expecting NULL"));
+
+#define ASSERT_NOT_NULL(expr) CST_ASSERT(expr != NULL, expr, fprintf(stderr, "Got NULL when expecting NOT NULL"));
+
 
 /*
  - Assertions - Bool
