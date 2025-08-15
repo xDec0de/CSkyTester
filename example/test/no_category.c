@@ -7,6 +7,6 @@
 
 int	main(void)
 {
-	CST_FAIL_TIP = "Test failed intentionally";
+	CST_FAIL_TIP = "Custom assertion fail details (Tests fail intentionally)";
 	ASSERT_FALSE(cst_isnum('1'));
 }

@@ -7,6 +7,5 @@
 
 int	main(void)
 {
-	CST_FAIL_TIP = "Test failed intentionally";
 	ASSERT_TRUE(cst_isnum('a'));
 }

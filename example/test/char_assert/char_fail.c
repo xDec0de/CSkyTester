@@ -7,6 +7,5 @@
 
 int	main(void)
 {
-	CST_FAIL_TIP = "Test failed intentionally";
 	ASSERT_CHAR_EQUALS(cst_toupper('a'), 'B');
 }

@@ -7,6 +7,5 @@
 
 int	main(void)
 {
-	CST_FAIL_TIP = "Test failed intentionally";
 	ASSERT_UINT_EQUALS(cst_uintsum(40, 2), 24);
 }
