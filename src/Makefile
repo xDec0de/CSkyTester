@@ -29,7 +29,7 @@ OBJ_DIR = $(CST_DIR)/objs
 
 TEST_SRC := $(shell find $(TESTS_DIR) -maxdepth 1 -type f -name '*.c' | sort) $(shell find $(TESTS_DIR) -mindepth 2 -type f -name '*.c' | sort)
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
-PROJ_SRC += $(CURDIR)/cst_config.c
+PROJ_SRC += $(CURDIR)/cst_config.c $(CURDIR)/cst_signal_handler.c
 
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
