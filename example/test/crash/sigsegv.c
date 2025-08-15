@@ -4,7 +4,7 @@
 
 int	main(void)
 {
-	CST_TEST_NAME = "Force crash test";
+	CST_TEST_NAME = "Force SIGSEGV";
 	char *null_str = NULL;
 	ASSERT_TRUE(null_str[0]);
 }
