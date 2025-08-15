@@ -18,11 +18,9 @@
 # define CST_FILE "???"
 #endif
 
-#ifndef CST_TEST_NAME
-# define CST_TEST_NAME CST_FILE
-#endif
-
 /* Global variables for configuration */
+
+extern char	*CST_TEST_NAME;
 
 /**
  * @brief Whether to display the default assertion failure details.
