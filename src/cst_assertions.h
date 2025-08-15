@@ -9,6 +9,9 @@
 /* exit */
 #include <stdlib.h>
 
+/* bool type */
+#include <stdbool.h>
+
 /* Custom test name macros with fallback */
 
 #ifndef CST_FILE
@@ -22,14 +25,25 @@
 /* Global variables for configuration */
 
 /**
+ * @brief Whether to display the default assertion failure details.
+ * If `true`, whenever an assertion fails, a default description
+ * such as "Got TRUE when expecting FALSE from (function)" is displayed.
+ * 
+ * Default: `true`
+ */
+bool	CST_SHOW_FAIL_DETAILS = true;
+
+/**
  * @brief The tip to display if the next assertion fails. This can be
  * used to provide detailed assertion fail descriptions to help
  * the developer fix the issue.
  * 
  * This will reset back to `NULL` once any assertion occurs, no
  * matter if it fails or passes.
+ * 
+ * Default: `NULL`
  */
-char *CST_FAIL_TIP = NULL;
+char	*CST_FAIL_TIP = NULL;
 
 /*
  - Shared assertion logic
@@ -41,11 +55,15 @@ char *CST_FAIL_TIP = NULL;
 		fprintf(stderr, CST_GREEN"✅ %s"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
-	fprintf(stderr, CST_RED"❌ %s"CST_GRAY": "CST_RED, CST_TEST_NAME);\
-	errmsg;\
-	fprintf(stderr, " from %s", #func);\
+	fprintf(stderr, CST_RED"❌ %s", CST_TEST_NAME);\
+	if (CST_SHOW_FAIL_DETAILS) {\
+		fprintf(stderr, CST_GRAY": "CST_RED);\
+		errmsg;\
+		fprintf(stderr, " from %s", #func);\
+	}\
 	if (CST_FAIL_TIP != NULL)\
-		fprintf(stderr, CST_GRAY" - "CST_RED"%s"CST_RES, CST_FAIL_TIP);\
+		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
+	fprintf(stderr, CST_RES);\
 	CST_FAIL_TIP = NULL;\
 	exit(EXIT_FAILURE);\
 } while (0)
