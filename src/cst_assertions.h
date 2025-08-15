@@ -31,7 +31,7 @@
  * 
  * Default: `true`
  */
-bool	CST_SHOW_FAIL_DETAILS = true;
+extern bool	CST_SHOW_FAIL_DETAILS;
 
 /**
  * @brief The tip to display if the next assertion fails. This can be
@@ -43,7 +43,7 @@ bool	CST_SHOW_FAIL_DETAILS = true;
  * 
  * Default: `NULL`
  */
-char	*CST_FAIL_TIP = NULL;
+extern char	*CST_FAIL_TIP;
 
 /*
  - Shared assertion logic
