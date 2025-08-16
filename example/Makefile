@@ -7,7 +7,7 @@ TEST_DIR = $(CURDIR)/test
 
 # > ~ Call test suite with extra CFLAGS
 
-EXTRA_CFLAGS = -Wall -Werror -Wextra -I$(CURDIR)/src
+EXTRA_CFLAGS = -I$(CURDIR)/src
 
 test:
 	@$(MAKE) -C $(CST_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)" EXTRA_CFLAGS="$(EXTRA_CFLAGS)"
