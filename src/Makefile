@@ -29,11 +29,13 @@ OBJ_DIR = $(CST_DIR)/objs
 
 TEST_SRC := $(shell find $(TESTS_DIR) -maxdepth 1 -type f -name '*.c' | sort) $(shell find $(TESTS_DIR) -mindepth 2 -type f -name '*.c' | sort)
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
-PROJ_SRC += $(CURDIR)/cst_config.c $(CURDIR)/cst_signal_handler.c
+PROJ_SRC += $(CURDIR)/cst_config.c $(CURDIR)/cst_signal_handler.c $(CURDIR)/cst_memcheck.c
 
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR) -g3 -fdiagnostics-color=always
+CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR) -g3 -fdiagnostics-color=always \
+	-Wl,--wrap=malloc -Wl,--wrap=free
+
 
 $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 	@mkdir -p $(dir $@)
