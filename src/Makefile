@@ -21,42 +21,59 @@ BLUE = \033[0;36m
 BBLUE = \033[1;36m
 GRAY = \033[0;30m
 RES = \033[0m
-RES_R = $(RES)                                                                   
+RES_R = $(RES)
 
 CST_DIR = $(TESTS_DIR)/cst
 LOG_DIR = $(CST_DIR)/logs
 OBJ_DIR = $(CST_DIR)/objs
+PROJ_OBJ_DIR = $(OBJ_DIR)/proj
+TEST_OBJ_DIR = $(OBJ_DIR)/cst
 
-TEST_SRC := $(shell find $(TESTS_DIR) -maxdepth 1 -type f -name '*.c' | sort) $(shell find $(TESTS_DIR) -mindepth 2 -type f -name '*.c' | sort)
+# > ~ Sources
+
 PROJ_SRC := $(shell find $(PROJ_DIR) -type f -name '*.c')
 PROJ_SRC += $(CURDIR)/cst_config.c $(CURDIR)/cst_signal_handler.c $(CURDIR)/cst_memcheck.c
+TEST_SRC := $(shell find $(TESTS_DIR) -maxdepth 1 -type f -name '*.c' | sort) \
+            $(shell find $(TESTS_DIR) -mindepth 2 -type f -name '*.c' | sort)
 
-OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
+# > ~ Objects
+
+PROJ_OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(PROJ_OBJ_DIR)/%.o)
+TEST_OBJS = $(TEST_SRC:$(TESTS_DIR)/%.c=$(TEST_OBJ_DIR)/%.o)
+
+# > ~ Compilation
 
 CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR) -g3 -fdiagnostics-color=always \
 	-Wl,--wrap=malloc -Wl,--wrap=free
 
-
-$(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
-	@mkdir -p $(dir $@)
-	@echo -n "\r⏳ $(YLW)Compiling $(BYLW)$(notdir $<)$(GRAY)...$(RES_R)"
-	@{\
-		ERR=$$( ($(CC) $(CFLAGS) -c $< -o $@) 2>&1 );\
-		if [ $$? -ne 0 ]; then\
-			echo -n "\r❌ $(RED)Failed to compile $(BRED)$@$(GRAY):$(RES_R)";\
-			echo "\n$$ERR";\
-			exit 1;\
-		fi;\
+define compile_obj
+	@mkdir -p $(dir $1)
+	@echo -n "\r⏳ $(YLW)Compiling $(BYLW)$(notdir $2)$(GRAY)...$(RES_R)"
+	@{ \
+		ERR=$$($(CC) $(CFLAGS) -c $2 -o $1 2>&1); \
+		if [ $$? -ne 0 ]; then \
+			echo -n "\r❌ $(RED)Failed to compile $(BRED)$1$(GRAY):$(RES_R)"; \
+			echo "\n$$ERR"; \
+			exit 1; \
+		fi; \
 	}
-	@echo -n "\r✅ $(GREEN)Successfully compiled project files$(RES_R)"
-	@echo 
+	@echo -n "\r✅ $(GREEN)Successfully compiled $(notdir $2)$(RES_R)"
+	@echo
+endef
 
-all: $(OBJS)
+$(PROJ_OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
+	$(call compile_obj,$@,$<)
+
+$(TEST_OBJ_DIR)/%.o: $(TESTS_DIR)/%.c
+	$(call compile_obj,$@,$<)
+
+# > ~ Main test rule
+
+all: $(PROJ_OBJS) $(TEST_OBJS)
 	@mkdir -p $(LOG_DIR)
 	@FAILED=0; \
 	TESTFILES="$(TEST_SRC)"; \
 	CURRENT_CAT=""; \
-	CURRENT_INDENT=""; \
 	for FILE in $$TESTFILES; do \
 		BASENAME=$$(basename $$FILE .c); \
 		DIRNAME=$$(dirname $$FILE); \
@@ -65,13 +82,15 @@ all: $(OBJS)
 		else \
 			CATNAME=""; \
 		fi; \
-		EXEC="$(LOG_DIR)/$$BASENAME.bin"; \
-		ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
-		COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC 2>&1); \
+		TEST_OBJ="$(TEST_OBJ_DIR)/$${FILE#$(TESTS_DIR)/}"; \
+		TEST_OBJ="$${TEST_OBJ%.c}.o"; \
+		EXEC=$$(mktemp); \
+		COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $(PROJ_OBJS) $$TEST_OBJ -o $$EXEC 2>&1); \
 		if [ $$? -ne 0 ]; then \
 			printf "❌ $(RED)Failed to compile test %s$(RES)\n" "$$BASENAME"; \
 			echo "$$COMPILE_OUTPUT"; \
 			FAILED=$$((FAILED + 1)); \
+			rm -f $$EXEC; \
 			continue; \
 		fi; \
 		if [ "$$CATNAME" != "" ] && [ "$$CURRENT_CAT" != "$$CATNAME" ]; then \
@@ -80,6 +99,7 @@ all: $(OBJS)
 		fi; \
 		OUTPUT=$$($$EXEC 2>&1); \
 		STATUS=$$?; \
+		rm -f $$EXEC; \
 		if [ "$$CATNAME" != "" ]; then \
 			if [ "$$FILE" = "$$(ls $$DIRNAME/*.c | tail -n1)" ]; then \
 				PREFIX="└──"; \
@@ -100,6 +120,8 @@ all: $(OBJS)
 		echo "\n❌ $(RED)$$FAILED test(s) failed.$(RES)"; \
 		exit 1; \
 	fi
+
+# > ~ Clean
 
 clean:
 	@if [ -d "$(CST_DIR)" ]; then \
