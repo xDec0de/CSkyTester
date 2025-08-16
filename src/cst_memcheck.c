@@ -40,9 +40,9 @@ void report_leaks(void) {
 	AllocNode *current = alloc_list;
 	if (!current)
 		return;
-	fprintf(stderr, "⚠️  Memory leaks detected:\n");
+	fprintf(stderr, "⚠️ "CST_YELLOW" %s "CST_GRAY"-"CST_YELLOW" Memory leaks detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
 	while (current) {
-		fprintf(stderr, "  - %zu bytes at %p\n", current->size, current->ptr);
+		fprintf(stderr, "  "CST_GRAY"- "CST_YELLOW"%zu bytes at %p"CST_RES"\n", current->size, current->ptr);
 		current = current->next;
 	}
 }
