@@ -33,7 +33,7 @@ PROJ_SRC += $(CURDIR)/cst_config.c $(CURDIR)/cst_signal_handler.c
 
 OBJS = $(PROJ_SRC:$(PROJ_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR)
+CFLAGS = $(EXTRA_CFLAGS) -I$(CURDIR) -g3 -fdiagnostics-color=always
 
 $(OBJ_DIR)/%.o: $(PROJ_DIR)/%.c
 	@mkdir -p $(dir $@)
