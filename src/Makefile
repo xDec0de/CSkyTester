@@ -67,7 +67,7 @@ all: $(OBJS)
 		ERR="$(LOG_DIR)/$$BASENAME.stderr"; \
 		COMPILE_OUTPUT=$$($(CC) $(CFLAGS) $$FILE $(OBJS) -o $$EXEC 2>&1); \
 		if [ $$? -ne 0 ]; then \
-			printf "❌ Failed to compile test %s\n" "$$BASENAME"; \
+			printf "❌ $(RED)Failed to compile test %s$(RES)\n" "$$BASENAME"; \
 			echo "$$COMPILE_OUTPUT"; \
 			FAILED=$$((FAILED + 1)); \
 			continue; \
