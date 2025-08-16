@@ -33,7 +33,7 @@ void remove_alloc(void *ptr) {
 		current = &((*current)->next);
 	}
 	fprintf(stderr, "💥"CST_RED" %s "CST_GRAY"-"CST_RED" Double free detected at %p"CST_RES"\n", CST_TEST_NAME, ptr);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 void report_leaks(void) {
@@ -45,6 +45,7 @@ void report_leaks(void) {
 		fprintf(stderr, "  "CST_GRAY"- "CST_YELLOW"%zu bytes at %p"CST_RES"\n", current->size, current->ptr);
 		current = current->next;
 	}
+	exit(EXIT_FAILURE);
 }
 
 void *__wrap_malloc(size_t size) {
