@@ -103,12 +103,16 @@ all: $(PROJ_OBJS) $(TEST_OBJS)
 		if [ "$$CATNAME" != "" ]; then \
 			if [ "$$FILE" = "$$(ls $$DIRNAME/*.c | tail -n1)" ]; then \
 				PREFIX="└──"; \
+				IS_LAST="yes"; \
 			else \
 				PREFIX="├──"; \
+				IS_LAST="no"; \
 			fi; \
-			printf "%s %s\n" "$$PREFIX" "$$OUTPUT"; \
+			echo "$$OUTPUT" | awk -v first_prefix="$$PREFIX" -v is_last="$$IS_LAST" \
+			'NR==1 {print first_prefix " " $$0} \
+			 NR>1 {if (is_last=="yes") print "    " $$0; else print "│   " $$0}'; \
 		else \
-			printf "%s\n" "$$OUTPUT"; \
+			echo "$$OUTPUT"; \
 		fi; \
 		if [ $$STATUS -ne 0 ]; then \
 			FAILED=$$((FAILED + 1)); \
