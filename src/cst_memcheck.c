@@ -98,7 +98,7 @@ static bool resolve_with_addr2line(const char *binary, unsigned long addr) {
 		size_t len = strlen(line);
 		if (len > 0 && line[len - 1] == '\n')
 			line[len - 1] = '\0';
-		fprintf(stderr, "    %s\n", line);
+		fprintf(stderr, "    "CST_RED"%s"CST_RES"\n", line);
 		pclose(fp);
 		return true;
 	}
@@ -125,7 +125,7 @@ static bool print_addr_module(void *addr) {
 			exep[len] = '\0';
 		else
 			strcpy(exep, "/proc/self/exe");
-		return resolve_with_addr2line(exep, (unsigned long)addr);
+		return resolve_with_addr2line(exep, (unsigned long) addr);
 	}
 
 	unsigned long base = (unsigned long)info.dli_fbase;
@@ -134,7 +134,7 @@ static bool print_addr_module(void *addr) {
 	if (resolve_with_addr2line(info.dli_fname, a_mod))
 		return true;
 	if (info.dli_sname != NULL) {
-		fprintf(stderr, "    at %s (%p)\n", info.dli_sname, addr);
+		fprintf(stderr, CST_RED"    at %s (%p)"CST_RES"\n", info.dli_sname, addr);
 		return true;
 	}
 	return false;
@@ -225,9 +225,9 @@ __attribute__((destructor))
 static void report_leaks(void) {
 	if (alloc_list == NULL)
 		return;
-	fprintf(stderr, "⚠️ "CST_YELLOW" %s "CST_GRAY"-"CST_YELLOW" Memory leaks detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
+	fprintf(stderr, "💧"CST_BRED" %s "CST_GRAY"-"CST_RED" Memory leaks detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
 	for (cst_allocation *cur = alloc_list; cur != NULL; cur = cur->next) {
-		fprintf(stderr, "  "CST_GRAY"- "CST_YELLOW"%zu bytes allocated at"CST_GRAY":"CST_RES"\n", cur->size);
+		fprintf(stderr, CST_GRAY"- "CST_BRED"%zu bytes "CST_RED"allocated at"CST_GRAY":"CST_RES"\n", cur->size);
 		print_backtrace(&cur->bt_alloc);
 	}
 	exit(EXIT_FAILURE);
@@ -265,7 +265,7 @@ void __wrap_free(void *ptr) {
 	if (ptr == NULL)
 		return;
 	if (!remove_alloc_if_present(ptr)) {
-		fprintf(stderr, "💥"CST_RED" %s "CST_GRAY"-"CST_RED" Double free detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME, ptr);
+		fprintf(stderr, "💥"CST_BRED" %s "CST_GRAY"-"CST_RED" Double free detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME, ptr);
 		cst_backtrace bt = {0};
 		bt_capture(&bt, 1);
 		print_backtrace(&bt);

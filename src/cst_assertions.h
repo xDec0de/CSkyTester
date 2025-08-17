@@ -53,7 +53,7 @@ extern char	*CST_FAIL_TIP;
 		fprintf(stderr, CST_GREEN"✅ %s"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
-	fprintf(stderr, CST_RED"❌ %s", CST_TEST_NAME);\
+	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
 	if (CST_SHOW_FAIL_DETAILS) {\
 		fprintf(stderr, CST_GRAY": "CST_RED);\
 		errmsg;\

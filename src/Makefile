@@ -121,7 +121,7 @@ all: $(PROJ_OBJS) $(TEST_OBJS)
 	if [ $$FAILED -eq 0 ]; then \
 		echo "\n✅ $(GREEN)All tests passed!$(RES)"; \
 	else \
-		echo "\n❌ $(RED)$$FAILED test(s) failed.$(RES)"; \
+		echo "\n❌ $(BRED)$$FAILED test(s) failed$(RES)"; \
 		exit 1; \
 	fi
 
