@@ -104,10 +104,22 @@ extern char	*CST_FAIL_TIP;
 	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got '%c' when expecting '%c'", cst_actual, cst_expected));\
 } while (0)
 
+#define ASSERT_CHAR_NOT_EQUALS(expr, expected) do {\
+	char cst_actual = (expr);\
+	char cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got '%c' when expecting NOT '%c'", cst_actual, cst_expected));\
+} while (0)
+
 #define ASSERT_UCHAR_EQUALS(expr, expected) do {\
 	unsigned char cst_actual = (expr);\
 	unsigned char cst_expected = (expected);\
 	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got '%u' when expecting '%u'", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_UCHAR_NOT_EQUALS(expr, expected) do {\
+	unsigned char cst_actual = (expr);\
+	unsigned char cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got '%u' when expecting NOT '%u'", cst_actual, cst_expected));\
 } while (0)
 
 /*
@@ -120,10 +132,22 @@ extern char	*CST_FAIL_TIP;
 	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %i when expecting %i", cst_actual, cst_expected));\
 } while (0)
 
+#define ASSERT_INT_NOT_EQUALS(expr, expected) do {\
+	int cst_actual = (expr);\
+	int cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %i when expecting NOT %i", cst_actual, cst_expected));\
+} while (0)
+
 #define ASSERT_UINT_EQUALS(expr, expected) do {\
 	unsigned int cst_actual = (expr);\
 	unsigned int cst_expected = (expected);\
 	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %u when expecting %u", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_UINT_NOT_EQUALS(expr, expected) do {\
+	unsigned int cst_actual = (expr);\
+	unsigned int cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %u when expecting NOT %u", cst_actual, cst_expected));\
 } while (0)
 
 #endif
