@@ -58,3 +58,9 @@ dkms.conf
 
 # VSCode
 .vscode/
+
+# CST executable
+src/cst
+
+# Any local experimentation files
+_IGNORE_*
