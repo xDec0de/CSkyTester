@@ -40,10 +40,6 @@ void vdebug(const char *msg, ...)
 	printf(CST_RES "\n");
 }
 
-/*
- - Program args handling
- */
-
 bool validate_cst_args(cst_args args)
 {
 	int e = 0;
@@ -80,6 +76,17 @@ cst_args init_cst_args(int argc, char **argv)
 	return (args);
 }
 
+void	cst_exit(cst_args args, int ec)
+{
+	if (args.test_srcs != NULL)
+		free(args.test_srcs);
+	if (args.proj_srcs != NULL)
+		free(args.proj_srcs);
+	if (args.extra_flags != NULL)
+		free(args.extra_flags);
+	exit(ec);
+}
+
 /*
  - Program entry point
  */
@@ -89,5 +96,6 @@ int main(int argc, char **argv)
 	cst_args args = init_cst_args(argc, argv);
 
 	if (!validate_cst_args(args))
-		exit(1);
+		cst_exit(args, 1);
+	cst_exit(args, 0);
 }
