@@ -1,0 +1,16 @@
+#ifndef CST_INTERNALS_H
+# define CST_INTERNALS_H
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef struct cst_args
+{
+	char	*test_srcs;
+	char	*proj_srcs;
+	char	*extra_flags;
+}	cst_args;
+
+#endif
