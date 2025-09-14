@@ -9,6 +9,8 @@
 # define CST_BYELLOW	"\033[1;33m"
 # define CST_BLUE		"\033[0;36m"
 # define CST_BBLUE		"\033[1;36m"
+# define CST_WHITE		"\033[0;37m"
+# define CST_BWHITE		"\033[1;37m"
 # define CST_GRAY		"\033[0;30m"
 # define CST_RES		"\033[0m"
 
