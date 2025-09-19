@@ -12,6 +12,9 @@
 /* bool type */
 #include <stdbool.h>
 
+/* fabsf, fabs & fabsl */
+#include <math.h>
+
 /* Custom test name macros with fallback */
 
 #ifndef CST_FILE
@@ -67,7 +70,8 @@ extern char	*CST_FAIL_TIP;
 } while (0)
 
 /*
- - Assertions - NULL */
+ - Assertions - NULL
+ */
 
 #define ASSERT_NULL(expr) CST_ASSERT(expr == NULL, expr, fprintf(stderr, "Got NOT NULL when expecting NULL"));
 
@@ -149,5 +153,155 @@ extern char	*CST_FAIL_TIP;
 	unsigned int cst_expected = (expected);\
 	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %u when expecting NOT %u", cst_actual, cst_expected));\
 } while (0)
+
+/*
+ - Assertions - Long
+ */
+
+#define ASSERT_LONG_EQUALS(expr, expected) do {\
+	long cst_actual = (expr);\
+	long cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %ld when expecting %ld", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_LONG_NOT_EQUALS(expr, expected) do {\
+	long cst_actual = (expr);\
+	long cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %ld when expecting NOT %ld", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_ULONG_EQUALS(expr, expected) do {\
+	unsigned long cst_actual = (expr);\
+	unsigned long cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %lu when expecting %lu", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_ULONG_NOT_EQUALS(expr, expected) do {\
+	unsigned long cst_actual = (expr);\
+	unsigned long cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %lu when expecting NOT %lu", cst_actual, cst_expected));\
+} while (0)
+
+/*
+ - Assertions - Long long
+ */
+
+#define ASSERT_LLONG_EQUALS(expr, expected) do {\
+	long long cst_actual = (expr);\
+	long long cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %lld when expecting %lld", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_LLONG_NOT_EQUALS(expr, expected) do {\
+	long long cst_actual = (expr);\
+	long long cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %lld when expecting NOT %lld", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_ULLONG_EQUALS(expr, expected) do {\
+	unsigned long long cst_actual = (expr);\
+	unsigned long long cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %llu when expecting %llu", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_ULLONG_NOT_EQUALS(expr, expected) do {\
+	unsigned long long cst_actual = (expr);\
+	unsigned long long cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %llu when expecting NOT %llu", cst_actual, cst_expected));\
+} while (0)
+
+/*
+ - Assertions - Short
+ */
+
+#define ASSERT_SHORT_EQUALS(expr, expected) do {\
+	short cst_actual = (expr);\
+	short cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %hd when expecting %hd", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_SHORT_NOT_EQUALS(expr, expected) do {\
+	short cst_actual = (expr);\
+	short cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %hd when expecting NOT %hd", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_USHORT_EQUALS(expr, expected) do {\
+	unsigned short cst_actual = (expr);\
+	unsigned short cst_expected = (expected);\
+	CST_ASSERT(cst_actual == cst_expected, expr, fprintf(stderr, "Got %hu when expecting %hu", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_USHORT_NOT_EQUALS(expr, expected) do {\
+	unsigned short cst_actual = (expr);\
+	unsigned short cst_expected = (expected);\
+	CST_ASSERT(cst_actual != cst_expected, expr, fprintf(stderr, "Got %hu when expecting NOT %hu", cst_actual, cst_expected));\
+} while (0)
+
+/*
+ - Assertions - Float
+ */
+
+#define ASSERT_FLOAT_EQUALS_APPROX(expr, expected, tol) do {\
+	float cst_actual = (expr);\
+	float cst_expected = (expected);\
+	CST_ASSERT(fabsf(cst_actual - cst_expected) <= (tol), expr, \
+		fprintf(stderr, "Got %f when expecting %f ± %f", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_FLOAT_EQUALS(expr, expected) ASSERT_FLOAT_EQUALS_APPROX((expr), (expected), 1e-6f)
+
+#define ASSERT_FLOAT_NOT_EQUALS_APPROX(expr, expected, tol) do {\
+	float cst_actual = (expr);\
+	float cst_expected = (expected);\
+	CST_ASSERT(!(fabsf(cst_actual - cst_expected) <= (tol)), expr, \
+		fprintf(stderr, "Got %f when expecting NOT %f ± %f", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_FLOAT_NOT_EQUALS(expr, expected) ASSERT_FLOAT_NOT_EQUALS_APPROX((expr), (expected), 1e-6f)
+
+/*
+ - Assertions - Double
+ */
+
+#define ASSERT_DOUBLE_EQUALS_APPROX(expr, expected, tol) do {\
+	double cst_actual = (expr);\
+	double cst_expected = (expected);\
+	CST_ASSERT(fabs(cst_actual - cst_expected) <= (tol), expr, \
+		fprintf(stderr, "Got %lf when expecting %lf ± %lf", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_DOUBLE_EQUALS(expr, expected) ASSERT_DOUBLE_EQUALS_APPROX((expr), (expected), 1e-12)
+
+#define ASSERT_DOUBLE_NOT_EQUALS_APPROX(expr, expected, tol) do {\
+	double cst_actual = (expr);\
+	double cst_expected = (expected);\
+	CST_ASSERT(!(fabs(cst_actual - cst_expected) <= (tol)), expr, \
+		fprintf(stderr, "Got %lf when expecting %lf ± %lf", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_DOUBLE_NOT_EQUALS(expr, expected) ASSERT_DOUBLE_NOT_EQUALS_APPROX((expr), (expected), 1e-12)
+
+/*
+ - Assertions - Long double
+ */
+
+#define ASSERT_LDOUBLE_EQUALS_APPROX(expr, expected, tol) do {\
+	long double cst_actual = (expr);\
+	long double cst_expected = (expected);\
+	CST_ASSERT(fabsl(cst_actual - cst_expected) <= (tol), expr, \
+		fprintf(stderr, "Got %Lf when expecting %Lf ± %Lf", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_LDOUBLE_EQUALS(expr, expected) ASSERT_LDOUBLE_EQUALS_APPROX((expr), (expected), 1e-15L)
+
+#define ASSERT_LDOUBLE_NOT_EQUALS_APPROX(expr, expected, tol) do {\
+	long double cst_actual = (expr);\
+	long double cst_expected = (expected);\
+	CST_ASSERT(!(fabsl(cst_actual - cst_expected) <= (tol)), expr, \
+		fprintf(stderr, "Got %Lf when expecting %Lf ± %Lf", cst_actual, cst_expected, tol));\
+} while (0)
+
+#define ASSERT_LDOUBLE_NOT_EQUALS(expr, expected) ASSERT_LDOUBLE_NOT_EQUALS_APPROX((expr), (expected), 1e-15L)
 
 #endif
