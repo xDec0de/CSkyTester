@@ -4,13 +4,34 @@
 
 static bool			CST_DEBUG = false;
 
-static const char	*CST_SOURCES[] = {
-	"cst_config.c",
-	"internal/cst_memcheck.c",
-	"internal/cst_signal_handler.c",
-};
+static const char	*CST_SOURCES =
+	"cst_config.c \
+	internal/cst_memcheck.c \
+	internal/cst_signal_handler.c";
 
-#define CST_SOURCES_COUNT (sizeof(CST_SOURCES) / sizeof(CST_SOURCES[0]))
+/*
+ - String format util
+ */
+
+static char *cst_fmt(const char *fmt, ...)
+{
+	va_list	tmp, args;
+	int		size;
+	char	*buf;
+
+	va_start(tmp, fmt);
+	va_copy(args, tmp);
+	size = vsnprintf(NULL, 0, fmt, tmp);
+	va_end(tmp);
+	if (size < 0)
+		return (va_end(args), NULL);
+	buf = malloc((size + 1) * sizeof(char));
+	if (buf == NULL)
+		return (va_end(args), NULL);
+	vsnprintf(buf, size + 1, fmt, args);
+	va_end(args);
+	return (buf);
+}
 
 /*
  - Message utility
