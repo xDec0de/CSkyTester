@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 typedef struct cst_args
 {
@@ -13,5 +14,14 @@ typedef struct cst_args
 	char	*proj_srcs;
 	char	*extra_flags;
 }	cst_args;
+
+static inline int cst_isspace(int ch)
+{
+	return isspace((unsigned char) ch);
+}
+
+
+# define ARG_VALIDATION_ERRC 1
+# define ALLOC_FAIL_ERRC 100
 
 #endif
