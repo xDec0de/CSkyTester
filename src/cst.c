@@ -87,10 +87,9 @@ static bool validate_cst_args(cst_args args)
 		e += err("No program sources provided");
 	if (e != 0)
 		return (false);
-	debug(CST_GREEN"Valid arguments provided"CST_GRAY":");
-	vdebug(CST_BBLUE"  Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_srcs);
-	vdebug(CST_BBLUE"  Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_srcs);
-	vdebug(CST_BBLUE"  Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
+	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_srcs);
+	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_srcs);
+	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
 	return (true);
 }
 
@@ -135,6 +134,8 @@ static cst_args init_cst_args(int argc, char **argv)
 			args.proj_srcs = sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "test_srcs=", 10) == 0)
 			args.test_srcs = sanitize_arg(argv[i] + 10);
+		else if (strncmp(arg, "cflags=", 7) == 0)
+			args.extra_flags = sanitize_arg(argv[i] + 7);
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
 			CST_DEBUG = true;
 	}
