@@ -87,9 +87,6 @@ static bool validate_cst_args(cst_args args)
 		e += err("No program sources provided");
 	if (e != 0)
 		return (false);
-	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_srcs);
-	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_srcs);
-	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
 	return (true);
 }
 
@@ -97,7 +94,7 @@ static bool validate_cst_args(cst_args args)
  - Building args
  */
 
-static char *sanitize_arg(char *arg)
+static char *sanitize_arg(const char *arg)
 {
 	size_t	final_size = 0;
 	size_t	si = 0;
@@ -119,6 +116,18 @@ static char *sanitize_arg(char *arg)
 	}
 	sanitized[si] = '\0';
 	return (sanitized);
+}
+
+static void append_cst_sources(cst_args *args)
+{
+	char	*cst_sources;
+	char	*tmp;
+
+	cst_sources = sanitize_arg(CST_SOURCES);
+	tmp = args->proj_srcs;
+	args->proj_srcs = cst_fmt("%s %s", args->proj_srcs, cst_sources);
+	free(cst_sources);
+	free(tmp);
 }
 
 static cst_args init_cst_args(int argc, char **argv)
@@ -163,5 +172,9 @@ int main(int argc, char **argv)
 
 	if (!validate_cst_args(args))
 		cst_exit(args, ARG_VALIDATION_ERRC);
+	append_cst_sources(&args);
+	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_srcs);
+	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_srcs);
+	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
 	cst_exit(args, EXIT_SUCCESS);
 }
