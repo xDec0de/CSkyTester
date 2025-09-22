@@ -10,10 +10,14 @@ CST_BIN = $(CST_DIR)/cst
 
 PROJ_SRC := $(shell find $(SRCS_DIR) -type f -name '*.c')
 TEST_SRC := $(shell find $(TEST_DIR) -type f -name '*.c' | sort)
-EXTRA_CFLAGS = -I$(SRCS_DIR)
+
+# > ~ C & CST flags
+
+EXTRA_CFLAGS = -I$(SRCS_DIR) -g3
+CST_FLAGS = -d
 
 test: $(CST_BIN)
-	@$(CST_BIN) "proj_srcs=$(PROJ_SRC)" "test_srcs=$(TEST_SRC)" "cflags=$(EXTRA_CFLAGS)"
+	@$(CST_BIN) "proj_srcs=$(PROJ_SRC)" "test_srcs=$(TEST_SRC)" "cflags=$(EXTRA_CFLAGS)" $(CST_FLAGS)
 
 # > ~ (Optional) Test suite clean task to remove temporary files
 

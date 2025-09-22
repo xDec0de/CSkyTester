@@ -20,7 +20,6 @@ static inline int cst_isspace(int ch)
 	return isspace((unsigned char) ch);
 }
 
-
 # define ARG_VALIDATION_ERRC 1
 # define ALLOC_FAIL_ERRC 100
 
