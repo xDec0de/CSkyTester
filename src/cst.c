@@ -2,12 +2,28 @@
 #include "internal/cst_internals.h"
 #include "cst_color.h"
 
+static cst_args		ARGS;
 static bool			CST_DEBUG = false;
 
 static const char	*CST_SOURCES =
 	"cst_config.c \
 	internal/cst_memcheck.c \
 	internal/cst_signal_handler.c";
+
+/*
+ - Program exit util
+ */
+
+static void	cst_exit(int ec)
+{
+	if (ARGS.test_objs != NULL)
+		free(ARGS.test_objs);
+	if (ARGS.proj_objs != NULL)
+		free(ARGS.proj_objs);
+	if (ARGS.extra_flags != NULL)
+		free(ARGS.extra_flags);
+	exit(ec);
+}
 
 /*
  - String format util
@@ -70,24 +86,22 @@ static void	*validate_alloc(void *alloc)
 	if (alloc != NULL)
 		return alloc;
 	err("Memory allocation failed");
-	exit(ALLOC_FAIL_ERRC);
+	cst_exit(ALLOC_FAIL_ERRC);
 }
 
 /*
  - Args validation
  */
 
-static bool validate_cst_args(cst_args args)
+static bool validate_cst_args()
 {
-	int e = 0;
+	int	e = 0;
 
-	if (args.test_objs == NULL)
+	if (ARGS.test_objs == NULL)
 		e += err("No test sources provided");
-	if (args.proj_objs == NULL)
+	if (ARGS.proj_objs == NULL)
 		e += err("No program sources provided");
-	if (e != 0)
-		return (false);
-	return (true);
+	return (e == 0);
 }
 
 /* 
@@ -118,7 +132,7 @@ static char *sanitize_arg(const char *arg)
 	return (sanitized);
 }
 
-static void append_cst_sources(cst_args *args)
+/*static void append_cst_sources(cst_args *args)
 {
 	char	*cst_sources;
 	char	*tmp;
@@ -128,61 +142,46 @@ static void append_cst_sources(cst_args *args)
 	args->proj_objs = cst_fmt("%s %s", args->proj_objs, cst_sources);
 	free(cst_sources);
 	free(tmp);
-}
+}*/
 
-static cst_args init_cst_args(int argc, char **argv)
+static void init_cst_args(int argc, char **argv)
 {
-	cst_args args;
-
-	args.test_objs = NULL;
-	args.proj_objs = NULL;
-	args.extra_flags = NULL;
-	args.memcheck = true;
-	args.sighandler = true;
+	ARGS.test_objs = NULL;
+	ARGS.proj_objs = NULL;
+	ARGS.extra_flags = NULL;
+	ARGS.memcheck = true;
+	ARGS.sighandler = true;
 	for (int i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (strncmp(arg, "proj_objs=", 10) == 0)
-			args.proj_objs = sanitize_arg(argv[i] + 10);
+			ARGS.proj_objs = sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "test_objs=", 10) == 0)
-			args.test_objs = sanitize_arg(argv[i] + 10);
+			ARGS.test_objs = sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "cflags=", 7) == 0)
-			args.extra_flags = sanitize_arg(argv[i] + 7);
+			ARGS.extra_flags = sanitize_arg(argv[i] + 7);
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
 			CST_DEBUG = true;
 		else if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
-			args.memcheck = false;
+			ARGS.memcheck = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
-			args.sighandler = false;
+			ARGS.sighandler = false;
 	}
-	return (args);
 }
 
 /*
- - Program entry / exit points
+ - Program entry point
  */
-
-static void	cst_exit(cst_args args, int ec)
-{
-	if (args.test_objs != NULL)
-		free(args.test_objs);
-	if (args.proj_objs != NULL)
-		free(args.proj_objs);
-	if (args.extra_flags != NULL)
-		free(args.extra_flags);
-	exit(ec);
-}
 
 int main(int argc, char **argv)
 {
-	cst_args args = init_cst_args(argc, argv);
-
-	if (!validate_cst_args(args))
-		cst_exit(args, ARG_VALIDATION_ERRC);
-	append_cst_sources(&args);
-	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_objs);
-	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_objs);
-	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
-	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (args.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
-	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (args.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
-	cst_exit(args, EXIT_SUCCESS);
+	init_cst_args(argc, argv);
+	if (!validate_cst_args())
+		cst_exit(ARG_VALIDATION_ERRC);
+	// TODO: Compile internals. This will be removed: append_cst_sources(&args);
+	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.test_objs);
+	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.proj_objs);
+	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.extra_flags);
+	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
+	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
+	cst_exit(EXIT_SUCCESS);
 }
