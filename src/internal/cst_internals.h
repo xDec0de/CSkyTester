@@ -8,10 +8,17 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+typedef struct cst_category
+{
+	char	*dir;
+	char	*alias;
+	char	**files;
+}	cst_category;
+
 typedef struct cst_args
 {
-	char	*test_srcs;
-	char	*proj_srcs;
+	char	*test_objs;
+	char	*proj_objs;
 	char	*extra_flags;
 }	cst_args;
 

@@ -81,9 +81,9 @@ static bool validate_cst_args(cst_args args)
 {
 	int e = 0;
 
-	if (args.test_srcs == NULL)
+	if (args.test_objs == NULL)
 		e += err("No test sources provided");
-	if (args.proj_srcs == NULL)
+	if (args.proj_objs == NULL)
 		e += err("No program sources provided");
 	if (e != 0)
 		return (false);
@@ -124,8 +124,8 @@ static void append_cst_sources(cst_args *args)
 	char	*tmp;
 
 	cst_sources = sanitize_arg(CST_SOURCES);
-	tmp = args->proj_srcs;
-	args->proj_srcs = cst_fmt("%s %s", args->proj_srcs, cst_sources);
+	tmp = args->proj_objs;
+	args->proj_objs = cst_fmt("%s %s", args->proj_objs, cst_sources);
 	free(cst_sources);
 	free(tmp);
 }
@@ -134,15 +134,15 @@ static cst_args init_cst_args(int argc, char **argv)
 {
 	cst_args args;
 
-	args.test_srcs = NULL;
-	args.proj_srcs = NULL;
+	args.test_objs = NULL;
+	args.proj_objs = NULL;
 	args.extra_flags = NULL;
 	for (int i = 1; i < argc; i++) {
 		char *arg = argv[i];
-		if (strncmp(arg, "proj_srcs=", 10) == 0)
-			args.proj_srcs = sanitize_arg(argv[i] + 10);
-		else if (strncmp(arg, "test_srcs=", 10) == 0)
-			args.test_srcs = sanitize_arg(argv[i] + 10);
+		if (strncmp(arg, "proj_objs=", 10) == 0)
+			args.proj_objs = sanitize_arg(argv[i] + 10);
+		else if (strncmp(arg, "test_objs=", 10) == 0)
+			args.test_objs = sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "cflags=", 7) == 0)
 			args.extra_flags = sanitize_arg(argv[i] + 7);
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
@@ -157,10 +157,10 @@ static cst_args init_cst_args(int argc, char **argv)
 
 static void	cst_exit(cst_args args, int ec)
 {
-	if (args.test_srcs != NULL)
-		free(args.test_srcs);
-	if (args.proj_srcs != NULL)
-		free(args.proj_srcs);
+	if (args.test_objs != NULL)
+		free(args.test_objs);
+	if (args.proj_objs != NULL)
+		free(args.proj_objs);
 	if (args.extra_flags != NULL)
 		free(args.extra_flags);
 	exit(ec);
@@ -173,8 +173,8 @@ int main(int argc, char **argv)
 	if (!validate_cst_args(args))
 		cst_exit(args, ARG_VALIDATION_ERRC);
 	append_cst_sources(&args);
-	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_srcs);
-	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_srcs);
+	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_objs);
+	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_objs);
 	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
 	cst_exit(args, EXIT_SUCCESS);
 }
