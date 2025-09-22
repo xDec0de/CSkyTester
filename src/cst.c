@@ -137,6 +137,8 @@ static cst_args init_cst_args(int argc, char **argv)
 	args.test_objs = NULL;
 	args.proj_objs = NULL;
 	args.extra_flags = NULL;
+	args.memcheck = true;
+	args.sighandler = true;
 	for (int i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (strncmp(arg, "proj_objs=", 10) == 0)
@@ -147,6 +149,10 @@ static cst_args init_cst_args(int argc, char **argv)
 			args.extra_flags = sanitize_arg(argv[i] + 7);
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
 			CST_DEBUG = true;
+		else if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
+			args.memcheck = false;
+		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
+			args.sighandler = false;
 	}
 	return (args);
 }
@@ -176,5 +182,7 @@ int main(int argc, char **argv)
 	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.test_objs);
 	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", args.proj_objs);
 	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", args.extra_flags);
+	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (args.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
+	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (args.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	cst_exit(args, EXIT_SUCCESS);
 }

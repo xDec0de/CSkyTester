@@ -12,7 +12,7 @@ typedef struct cst_category
 {
 	char	*dir;
 	char	*alias;
-	char	**files;
+	char	**objs;
 }	cst_category;
 
 typedef struct cst_args
@@ -20,6 +20,8 @@ typedef struct cst_args
 	char	*test_objs;
 	char	*proj_objs;
 	char	*extra_flags;
+	bool	memcheck;
+	bool	sighandler;
 }	cst_args;
 
 static inline int cst_isspace(int ch)

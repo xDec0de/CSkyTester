@@ -17,7 +17,7 @@ EXTRA_CFLAGS = -I$(SRCS_DIR) -g3
 CST_FLAGS = -d
 
 test: $(CST_BIN)
-	@$(CST_BIN) "proj_srcs=$(PROJ_SRC)" "test_srcs=$(TEST_SRC)" "cflags=$(EXTRA_CFLAGS)" $(CST_FLAGS)
+	@$(CST_BIN) "proj_objs=$(PROJ_SRC)" "test_objs=$(TEST_SRC)" "cflags=$(EXTRA_CFLAGS)" $(CST_FLAGS)
 
 # > ~ (Optional) Test suite clean task to remove temporary files
 
