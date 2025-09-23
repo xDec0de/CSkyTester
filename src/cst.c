@@ -159,6 +159,8 @@ static void init_cst_args(int argc, char **argv)
 			ARGS.test_objs = sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "cflags=", 7) == 0)
 			ARGS.extra_flags = sanitize_arg(argv[i] + 7);
+		else if (strncmp(arg, "cst_dir=", 8) == 0)
+			CST_DIR = strdup(argv[i] + 8); // We trust the user on this one
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
 			CST_DEBUG = true;
 		else if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
@@ -194,6 +196,7 @@ static char *get_cst_dir(const char *argv0)
 int main(int argc, char **argv)
 {
 	init_cst_args(argc, argv);
+	if (CST_DIR == NULL)
 	CST_DIR = get_cst_dir(argv[0]);
 	if (CST_DIR == NULL) {
 		err("Couldn't obtain CST's directory. Try defining it manually with \"cst_dir=/absolute/path/to/cst\"");
