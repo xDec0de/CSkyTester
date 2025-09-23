@@ -1,7 +1,17 @@
 
 #include "internal/cst_internals.h"
 #include "cst_color.h"
+#include <sys/stat.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
+#include <libgen.h>
 
+static char			*CST_DIR = NULL;
 static cst_args		ARGS;
 static bool			CST_DEBUG = false;
 
@@ -22,6 +32,8 @@ static void	cst_exit(int ec)
 		free(ARGS.proj_objs);
 	if (ARGS.extra_flags != NULL)
 		free(ARGS.extra_flags);
+	if (CST_DIR != NULL)
+		free(CST_DIR);
 	exit(ec);
 }
 
@@ -61,7 +73,7 @@ static int	err(char *msg)
 static void	debug(char *msg)
 {
 	if (CST_DEBUG)
-		printf(CST_GRAY"["CST_BWHITE"CST DEBUG"CST_GRAY"] %s"CST_RES"\n", msg);
+		printf(CST_GRAY"["CST_BWHITE"CST DEBUG"CST_GRAY"] "CST_WHITE"%s"CST_RES"\n", msg);
 }
 
 static void vdebug(const char *msg, ...)
@@ -71,7 +83,7 @@ static void vdebug(const char *msg, ...)
 	if (!CST_DEBUG)
 		return ;
 	va_start(args, msg);
-	printf(CST_GRAY "[" CST_BWHITE "CST DEBUG" CST_GRAY "] ");
+	printf(CST_GRAY "[" CST_BWHITE "CST DEBUG" CST_GRAY "] "CST_WHITE);
 	vprintf(msg, args);
 	va_end(args);
 	printf(CST_RES "\n");
@@ -93,7 +105,7 @@ static void	*validate_alloc(void *alloc)
  - Args validation
  */
 
-static bool validate_cst_args()
+static bool validate_cst_args(void)
 {
 	int	e = 0;
 
@@ -132,18 +144,6 @@ static char *sanitize_arg(const char *arg)
 	return (sanitized);
 }
 
-/*static void append_cst_sources(cst_args *args)
-{
-	char	*cst_sources;
-	char	*tmp;
-
-	cst_sources = sanitize_arg(CST_SOURCES);
-	tmp = args->proj_objs;
-	args->proj_objs = cst_fmt("%s %s", args->proj_objs, cst_sources);
-	free(cst_sources);
-	free(tmp);
-}*/
-
 static void init_cst_args(int argc, char **argv)
 {
 	ARGS.test_objs = NULL;
@@ -169,12 +169,37 @@ static void init_cst_args(int argc, char **argv)
 }
 
 /*
+ - Get CST directory
+ */
+
+static char *get_cst_dir(const char *argv0)
+{
+	char	*dir = NULL;
+
+	dir = realpath("/proc/self/exe", NULL);
+	if (dir != NULL)
+		return dirname(dir);
+	if (argv0 != NULL && strchr(argv0, '/') != NULL) {
+		dir = realpath(argv0, NULL);
+		if (dir != NULL)
+			return dirname(dir);
+	}
+	return NULL;
+}
+
+/*
  - Program entry point
  */
 
 int main(int argc, char **argv)
 {
 	init_cst_args(argc, argv);
+	CST_DIR = get_cst_dir(argv[0]);
+	if (CST_DIR == NULL) {
+		err("Couldn't obtain CST's directory. Try defining it manually with \"cst_dir=/absolute/path/to/cst\"");
+		cst_exit(CST_DIR_UNKNOWN);
+	}
+	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
 	if (!validate_cst_args())
 		cst_exit(ARG_VALIDATION_ERRC);
 	// TODO: Compile internals. This will be removed: append_cst_sources(&args);

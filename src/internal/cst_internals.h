@@ -2,10 +2,6 @@
 # define CST_INTERNALS_H
 
 #include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <ctype.h>
 
 typedef struct cst_category
@@ -30,6 +26,7 @@ static inline int cst_isspace(int ch)
 }
 
 # define ARG_VALIDATION_ERRC 1
+# define CST_DIR_UNKNOWN 2
 # define ALLOC_FAIL_ERRC 100
 
 #endif
