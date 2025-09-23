@@ -4,18 +4,25 @@
 CST_DIR = $(CURDIR)/../src
 SRCS_DIR = $(CURDIR)/src
 TEST_DIR = $(CURDIR)/test
+CST_BIN = $(CST_DIR)/cst
 
-# > ~ Call test suite with extra CFLAGS
+# > ~ Source lists
 
-EXTRA_CFLAGS = -I$(CURDIR)/src
+PROJ_SRC := $(shell find $(SRCS_DIR) -type f -name '*.c')
+TEST_SRC := $(shell find $(TEST_DIR) -type f -name '*.c' | sort)
 
-test:
-	@$(MAKE) -C $(CST_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)" EXTRA_CFLAGS="$(EXTRA_CFLAGS)"
+# > ~ C & CST flags
+
+EXTRA_CFLAGS = -I$(SRCS_DIR) -g3
+CST_FLAGS = -d
+
+test: $(CST_BIN)
+	@$(CST_BIN) "proj_objs=$(PROJ_SRC)" "test_objs=$(TEST_SRC)" "cflags=$(EXTRA_CFLAGS)" $(CST_FLAGS)
 
 # > ~ (Optional) Test suite clean task to remove temporary files
 
 clean:
-	@$(MAKE) clean -C $(CST_DIR) PROJ_DIR="$(SRCS_DIR)" TESTS_DIR="$(TEST_DIR)"
+	@rm -rf $(TEST_DIR)/cst
 
 .PHONY: test clean
 
