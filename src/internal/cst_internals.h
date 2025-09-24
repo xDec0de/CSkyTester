@@ -26,7 +26,11 @@ static inline int cst_isspace(int ch)
 }
 
 # define ARG_VALIDATION_ERRC 1
-# define CST_DIR_UNKNOWN 2
+
+# define CST_DIR_UNKNOWN_ERR "Couldn't obtain CST's directory. Try defining it manually with \"cst_dir=/absolute/path/to/cst\""
+# define CST_DIR_UNKNOWN_ERRC 2
+
+# define ALLOC_FAIL_ERR "Memory allocation failed"
 # define ALLOC_FAIL_ERRC 100
 
 #endif

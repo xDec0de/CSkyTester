@@ -21,47 +21,6 @@ static const char	*CST_SOURCES =
 	internal/cst_signal_handler.c";
 
 /*
- - Program exit util
- */
-
-static void	cst_exit(int ec)
-{
-	if (ARGS.test_objs != NULL)
-		free(ARGS.test_objs);
-	if (ARGS.proj_objs != NULL)
-		free(ARGS.proj_objs);
-	if (ARGS.extra_flags != NULL)
-		free(ARGS.extra_flags);
-	if (CST_DIR != NULL)
-		free(CST_DIR);
-	exit(ec);
-}
-
-/*
- - String format util
- */
-
-static char *cst_fmt(const char *fmt, ...)
-{
-	va_list	tmp, args;
-	int		size;
-	char	*buf;
-
-	va_start(tmp, fmt);
-	va_copy(args, tmp);
-	size = vsnprintf(NULL, 0, fmt, tmp);
-	va_end(tmp);
-	if (size < 0)
-		return (va_end(args), NULL);
-	buf = malloc((size + 1) * sizeof(char));
-	if (buf == NULL)
-		return (va_end(args), NULL);
-	vsnprintf(buf, size + 1, fmt, args);
-	va_end(args);
-	return (buf);
-}
-
-/*
  - Message utility
  */
 
@@ -90,15 +49,60 @@ static void vdebug(const char *msg, ...)
 }
 
 /*
- - Alloc valication
+ - Program exit util
  */
 
-static void	*validate_alloc(void *alloc)
+static void	cst_exit(char *errmsg, int ec)
 {
-	if (alloc != NULL)
-		return alloc;
-	err("Memory allocation failed");
-	cst_exit(ALLOC_FAIL_ERRC);
+	if (ARGS.test_objs != NULL)
+		free(ARGS.test_objs);
+	if (ARGS.proj_objs != NULL)
+		free(ARGS.proj_objs);
+	if (ARGS.extra_flags != NULL)
+		free(ARGS.extra_flags);
+	if (CST_DIR != NULL)
+		free(CST_DIR);
+	if (err != NULL)
+		err(errmsg);
+	exit(ec);
+}
+
+/*
+ - String format util
+ */
+
+static char *cst_fmt(const char *fmt, ...)
+{
+	va_list	tmp, args;
+	int		size;
+	char	*buf;
+
+	va_start(tmp, fmt);
+	va_copy(args, tmp);
+	size = vsnprintf(NULL, 0, fmt, tmp);
+	va_end(tmp);
+	if (size < 0)
+		return (va_end(args), NULL);
+	buf = malloc((size + 1) * sizeof(char));
+	if (buf == NULL)
+		return (va_end(args), NULL);
+	vsnprintf(buf, size + 1, fmt, args);
+	va_end(args);
+	return (buf);
+}
+
+/*
+ - Malloc util
+ */
+
+static void	*cst_malloc(size_t size)
+{
+	void	*ptr;
+
+	ptr = malloc(size);
+	if (ptr != NULL)
+		return ptr;
+	cst_exit(ALLOC_FAIL_ERR, ALLOC_FAIL_ERRC);
 }
 
 /*
@@ -134,7 +138,7 @@ static char *sanitize_arg(const char *arg)
 		return NULL;
 	if (cst_isspace(arg[arglen - 1]))
 		final_size--;
-	sanitized = validate_alloc(malloc((final_size + 1) * sizeof(char)));
+	sanitized = cst_malloc((final_size + 1) * sizeof(char));
 	for (size_t i = 0; arg[i] != '\0' && si < final_size; i++) {
 		char argc = arg[i];
 		if (!cst_isspace(argc) || (si != 0 && !cst_isspace(arg[i - 1])))
@@ -199,17 +203,14 @@ int main(int argc, char **argv)
 	if (CST_DIR == NULL)
 	CST_DIR = get_cst_dir(argv[0]);
 	if (CST_DIR == NULL) {
-		err("Couldn't obtain CST's directory. Try defining it manually with \"cst_dir=/absolute/path/to/cst\"");
-		cst_exit(CST_DIR_UNKNOWN);
-	}
+		cst_exit(CST_DIR_UNKNOWN_ERR, CST_DIR_UNKNOWN_ERRC);
 	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
 	if (!validate_cst_args())
-		cst_exit(ARG_VALIDATION_ERRC);
-	// TODO: Compile internals. This will be removed: append_cst_sources(&args);
+		cst_exit(NULL, ARG_VALIDATION_ERRC);
 	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.test_objs);
 	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.proj_objs);
 	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.extra_flags);
 	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
 	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
-	cst_exit(EXIT_SUCCESS);
+	cst_exit(NULL, EXIT_SUCCESS);
 }
