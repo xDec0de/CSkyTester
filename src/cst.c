@@ -24,11 +24,6 @@ static const char	*CST_SOURCES =
  - Message utility
  */
 
-static int	err(char *msg)
-{
-	return printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", msg);
-}
-
 static void	debug(char *msg)
 {
 	if (CST_DEBUG)
@@ -62,8 +57,8 @@ static void	cst_exit(char *errmsg, int ec)
 		free(ARGS.extra_flags);
 	if (CST_DIR != NULL)
 		free(CST_DIR);
-	if (err != NULL)
-		err(errmsg);
+	if (errmsg != NULL)
+		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
 	exit(ec);
 }
 
@@ -105,6 +100,45 @@ static void	*cst_malloc(size_t size)
 	cst_exit(ALLOC_FAIL_ERR, ALLOC_FAIL_ERRC);
 }
 
+/* 
+ - Internal sources compilation
+ */
+
+static void compile_internal(char *file)
+{
+	char	*buf;
+
+	buf = cst_fmt("gcc -c %s/%s.c -o %s/objs/%s.o", CST_DIR, file, CST_DIR, file);
+	if (system(buf) != 0) {
+		free(buf);
+		cst_exit(CST_COMPILE_INTERNAL_ERR, CST_COMPILE_INTERNAL_ERRC);
+	}
+	free(buf);
+}
+
+static void compile_internals(void)
+{
+	char	*buf;
+
+	buf = cst_fmt("%s/objs", CST_DIR);
+	if (mkdir(buf, 0777) != 0 && errno != EEXIST) {
+		free(buf);
+		cst_exit("Failed to create \"objs\" directory", 3);
+	}
+	free(buf);
+	buf = cst_fmt("%s/objs/internal", CST_DIR);
+	if (mkdir(buf, 0777) != 0 && errno != EEXIST) {
+		free(buf);
+		cst_exit("Failed to create \"objs/internal\" directory", 3);
+	}
+	free(buf);
+	compile_internal("cst_config");
+	if (ARGS.memcheck)
+		compile_internal("internal/cst_memcheck");
+	if (ARGS.sighandler)
+		compile_internal("internal/cst_signal_handler");
+}
+
 /*
  - Args validation
  */
@@ -114,9 +148,9 @@ static bool validate_cst_args(void)
 	int	e = 0;
 
 	if (ARGS.test_objs == NULL)
-		e += err("No test sources provided");
+		e += printf(CST_ERR_PREFIX"No test objects provided"CST_RES"\n");
 	if (ARGS.proj_objs == NULL)
-		e += err("No program sources provided");
+		e += printf(CST_ERR_PREFIX"No program objects provided"CST_RES"\n");
 	return (e == 0);
 }
 
@@ -201,12 +235,13 @@ int main(int argc, char **argv)
 {
 	init_cst_args(argc, argv);
 	if (CST_DIR == NULL)
-	CST_DIR = get_cst_dir(argv[0]);
-	if (CST_DIR == NULL) {
+		CST_DIR = get_cst_dir(argv[0]);
+	if (CST_DIR == NULL)
 		cst_exit(CST_DIR_UNKNOWN_ERR, CST_DIR_UNKNOWN_ERRC);
 	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
 	if (!validate_cst_args())
 		cst_exit(NULL, ARG_VALIDATION_ERRC);
+	compile_internals();
 	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.test_objs);
 	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.proj_objs);
 	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.extra_flags);

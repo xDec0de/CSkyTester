@@ -1,4 +1,4 @@
-#include "cst_assertions.h"
+#include "../cst_assertions.h"
 #include <signal.h>
 
 char *cst_getsigname(int signum)

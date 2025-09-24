@@ -22,7 +22,7 @@ test: $(CST_BIN)
 # > ~ (Optional) Test suite clean task to remove temporary files
 
 clean:
-	@rm -rf $(TEST_DIR)/cst
+	@rm -rf $(CST_DIR)/objs
 
 .PHONY: test clean
 
