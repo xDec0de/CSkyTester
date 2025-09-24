@@ -116,16 +116,34 @@ static void	*cst_malloc(size_t size)
  - Internal sources compilation
  */
 
-static void compile_internal(char *file)
+static bool is_up_to_date(const char *src, const char *obj)
 {
-	char	*buf;
+	struct stat st_src, st_obj;
 
-	buf = cst_fmt("gcc -c %s/%s.c -o %s/objs/%s.o", CST_DIR, file, CST_DIR, file);
-	if (system(buf) != 0) {
-		free(buf);
+	if (stat(obj, &st_obj) == -1)
+		return false;
+	if (stat(src, &st_src) == -1)
+		return false;
+	return st_obj.st_mtime >= st_src.st_mtime;
+}
+
+static void compile_internal(const char *file)
+{
+	char *src = cst_fmt("%s/%s.c", CST_DIR, file);
+	char *obj = cst_fmt("%s/objs/%s.o", CST_DIR, file);
+
+	if (is_up_to_date(src, obj)) {
+		vdebug(CST_BBLUE "Up to date" CST_GRAY ": " CST_YELLOW "%s", obj);
+		free(src); free(obj);
+		return;
+	}
+	char *cmd = cst_fmt("gcc -c %s -o %s", src, obj);
+	vdebug(CST_BBLUE "Compiling" CST_GRAY ": " CST_YELLOW "%s", src);
+	if (system(cmd) != 0) {
+		free(src); free(obj); free(cmd);
 		cst_exit(CST_COMPILE_INTERNAL_ERR, CST_COMPILE_INTERNAL_ERRC);
 	}
-	free(buf);
+	free(src); free(obj); free(cmd);
 }
 
 static void compile_internals(void)
