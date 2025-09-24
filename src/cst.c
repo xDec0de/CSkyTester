@@ -2,6 +2,7 @@
 #include "internal/cst_internals.h"
 #include "cst_color.h"
 #include <sys/stat.h>
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 #include <limits.h>
 #include <libgen.h>
 
+static size_t		CST_START_DATE = ULONG_MAX;
 static char			*CST_DIR = NULL;
 static cst_args		ARGS;
 static bool			CST_DEBUG = false;
@@ -47,6 +49,15 @@ static void vdebug(const char *msg, ...)
  - Program exit util
  */
 
+static size_t cst_now_ms(void)
+{
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
+		return (size_t) - 1;
+	return ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
+}
+
 static void	cst_exit(char *errmsg, int ec)
 {
 	if (ARGS.test_objs != NULL)
@@ -59,6 +70,7 @@ static void	cst_exit(char *errmsg, int ec)
 		free(CST_DIR);
 	if (errmsg != NULL)
 		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
+	vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
 	exit(ec);
 }
 
@@ -233,6 +245,7 @@ static char *get_cst_dir(const char *argv0)
 
 int main(int argc, char **argv)
 {
+	CST_START_DATE = cst_now_ms();
 	init_cst_args(argc, argv);
 	if (CST_DIR == NULL)
 		CST_DIR = get_cst_dir(argv[0]);
