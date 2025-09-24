@@ -25,7 +25,7 @@ CFLAGS = -I$(CST_DIR) -I$(SRCS_DIR)
 CST_FLAGS = -d
 
 test: $(PROJ_OBJS) $(TEST_OBJS) $(CST_BIN)
-	@valgrind -q $(CST_BIN) "proj_objs=$(PROJ_OBJS)" "test_objs=$(TEST_OBJS)" $(CST_FLAGS)
+	@$(CST_BIN) "proj_objs=$(PROJ_OBJS)" "test_objs=$(TEST_OBJS)" $(CST_FLAGS)
 
 # > ~ (Optional) Test suite clean task to remove temporary files
 
