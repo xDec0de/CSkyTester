@@ -131,6 +131,7 @@ static void compile_internal(char *file)
 static void compile_internals(void)
 {
 	char	*buf;
+	size_t	compile_ms = cst_now_ms();
 
 	buf = cst_fmt("%s/objs", CST_DIR);
 	if (mkdir(buf, 0777) != 0 && errno != EEXIST) {
@@ -149,6 +150,7 @@ static void compile_internals(void)
 		compile_internal("internal/cst_memcheck");
 	if (ARGS.sighandler)
 		compile_internal("internal/cst_signal_handler");
+	vdebug(CST_BBLUE"Internals compiled in"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - compile_ms);
 }
 
 /*
@@ -254,11 +256,11 @@ int main(int argc, char **argv)
 	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
 	if (!validate_cst_args())
 		cst_exit(NULL, ARG_VALIDATION_ERRC);
-	compile_internals();
 	vdebug(CST_BBLUE"Test sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.test_objs);
 	vdebug(CST_BBLUE"Proj sources"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.proj_objs);
 	vdebug(CST_BBLUE"Extra flags"CST_GRAY": "CST_YELLOW"\"%s\"", ARGS.extra_flags);
 	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
 	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
+	compile_internals();
 	cst_exit(NULL, EXIT_SUCCESS);
 }
