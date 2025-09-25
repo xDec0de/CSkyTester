@@ -250,7 +250,7 @@ static void compile_internals(void)
  - Args validation
  */
 
-static bool validate_cst_args(void)
+static void validate_cst_args(void)
 {
 	int	e = 0;
 
@@ -258,7 +258,8 @@ static bool validate_cst_args(void)
 		e += printf(CST_ERR_PREFIX"No test objects provided"CST_RES"\n");
 	if (ARGS.proj_objs == NULL)
 		e += printf(CST_ERR_PREFIX"No program objects provided"CST_RES"\n");
-	return (e == 0);
+	if (e != 0)
+		cst_exit(NULL, ARG_VALIDATION_ERRC);
 }
 
 /* 
@@ -347,8 +348,7 @@ int main(int argc, char **argv)
 	if (CST_DIR == NULL)
 		cst_exit(CST_DIR_UNKNOWN_ERR, CST_DIR_UNKNOWN_ERRC);
 	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
-	if (!validate_cst_args())
-		cst_exit(NULL, ARG_VALIDATION_ERRC);
+	validate_cst_args();
 	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
 	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	compile_internals();
