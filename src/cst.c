@@ -17,6 +17,7 @@ static bool			CST_DEBUG = false;
 static size_t		CST_START_DATE = ULONG_MAX;
 static char			*CST_DIR = NULL;
 static cst_args		CST_ARGS;
+static char			*CST_INTERNALS = NULL;
 
 static cst_test		*CST_TESTS = NULL;
 
@@ -50,23 +51,24 @@ static size_t cst_now_ms(void)
 	return ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 
+static void	cst_free(void *ptr)
+{
+	if (ptr != NULL)
+		free(ptr);
+}
+
 static void	cst_exit(char *errmsg, int ec)
 {
-	if (CST_ARGS.test_objs != NULL)
-		free(CST_ARGS.test_objs);
-	if (CST_ARGS.proj_objs != NULL)
-		free(CST_ARGS.proj_objs);
-	if (CST_ARGS.extra_flags != NULL)
-		free(CST_ARGS.extra_flags);
-	if (CST_DIR != NULL)
-		free(CST_DIR);
+	cst_free(CST_ARGS.test_objs);
+	cst_free(CST_ARGS.proj_objs);
+	cst_free(CST_ARGS.extra_flags);
+	cst_free(CST_DIR);
+	cst_free(CST_INTERNALS);
 	if (CST_TESTS != NULL) {
 		for (cst_test *test = CST_TESTS, *tmp; test != NULL; test = tmp) {
 			tmp = test->next;
-			if (test->dir != NULL)
-				free(test->dir);
-			if (test->obj != NULL)
-				free(test->obj);
+			cst_free(test->dir);
+			cst_free(test->obj);
 			free(test);
 		}
 		CST_TESTS = NULL;
@@ -236,6 +238,13 @@ static void cst_compile_internal(const char *file)
 	char *src = cst_fmt("%s/%s.c", CST_DIR, file);
 	char *obj = cst_fmt("%s/objs/%s.o", CST_DIR, file);
 
+	if (CST_INTERNALS == NULL)
+		CST_INTERNALS = strdup(obj);
+	else {
+		char *tmp = CST_INTERNALS;
+		CST_INTERNALS = cst_fmt("%s %s", tmp, obj);
+		free(tmp);
+	}
 	if (cst_is_up_to_date(src, obj)) {
 		cst_vdebug(CST_BBLUE "Up to date" CST_GRAY ": " CST_YELLOW "%s", obj);
 		free(src); free(obj);
