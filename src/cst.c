@@ -116,6 +116,41 @@ static void	*cst_malloc(size_t size)
 }
 
 /*
+ - Test execution
+ */
+
+static void cst_run_test(cst_test *test)
+{
+	cst_vdebug("- Test: %s", test->obj);
+	test->executed = true;
+}
+
+static void	cst_run_tests()
+{
+	char	*dir = NULL;
+	size_t	remaining = 0;
+
+	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
+		remaining++;
+	while (remaining != 0) {
+		dir = NULL;
+		for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
+			if (test->executed)
+				continue;
+			if (dir == NULL) {
+				dir = test->dir;
+				cst_vdebug("Category: %s", dir);
+				cst_run_test(test);
+				remaining--;
+			} else if (strcmp(dir, test->dir) == 0) {
+				cst_run_test(test);
+				remaining--;
+			}
+		}
+	}
+}
+
+/*
  - Prepare test categories
  */
 
@@ -347,10 +382,6 @@ int main(int argc, char **argv)
 	cst_vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (CST_ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	cst_compile_internals();
 	cst_tokenize_tests();
-	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next) {
-		cst_vdebug("Test at: %s", tmp->dir);
-		cst_vdebug("- Obj: %s", tmp->obj);
-		cst_vdebug("- Executed: %s", (tmp->executed ? CST_GREEN"YES" : CST_RED"NO"));
-	}
+	cst_run_tests();
 	cst_exit(NULL, EXIT_SUCCESS);
 }
