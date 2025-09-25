@@ -20,7 +20,7 @@ TEST_OBJS = $(TEST_SRC:%.c=%.o)
 # > ~ C & CST flags
 
 # We include CST's dir to access cst_assertions.h easily
-CFLAGS = -I$(CST_DIR) -I$(SRCS_DIR)
+CFLAGS = -I$(CST_DIR) -I$(SRCS_DIR) -g3
 # Enable debug mode on CST
 CST_FLAGS = -d
 
