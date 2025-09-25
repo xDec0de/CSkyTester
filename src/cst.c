@@ -16,7 +16,7 @@ static bool			CST_DEBUG = false;
 
 static size_t		CST_START_DATE = ULONG_MAX;
 static char			*CST_DIR = NULL;
-static cst_args		ARGS;
+static cst_args		CST_ARGS;
 
 static cst_test		*CST_TESTS = NULL;
 
@@ -24,13 +24,7 @@ static cst_test		*CST_TESTS = NULL;
  - Message utility
  */
 
-static void	debug(char *msg)
-{
-	if (CST_DEBUG)
-		printf(CST_GRAY"["CST_BWHITE"CST DEBUG"CST_GRAY"] "CST_WHITE"%s"CST_RES"\n", msg);
-}
-
-static void vdebug(const char *msg, ...)
+static void cst_vdebug(const char *msg, ...)
 {
 	va_list	args;
 
@@ -58,12 +52,12 @@ static size_t cst_now_ms(void)
 
 static void	cst_exit(char *errmsg, int ec)
 {
-	if (ARGS.test_objs != NULL)
-		free(ARGS.test_objs);
-	if (ARGS.proj_objs != NULL)
-		free(ARGS.proj_objs);
-	if (ARGS.extra_flags != NULL)
-		free(ARGS.extra_flags);
+	if (CST_ARGS.test_objs != NULL)
+		free(CST_ARGS.test_objs);
+	if (CST_ARGS.proj_objs != NULL)
+		free(CST_ARGS.proj_objs);
+	if (CST_ARGS.extra_flags != NULL)
+		free(CST_ARGS.extra_flags);
 	if (CST_DIR != NULL)
 		free(CST_DIR);
 	if (CST_TESTS != NULL) {
@@ -79,7 +73,7 @@ static void	cst_exit(char *errmsg, int ec)
 	}
 	if (errmsg != NULL)
 		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
-	vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
+	cst_vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
 	exit(ec);
 }
 
@@ -155,16 +149,16 @@ static void cst_tokenize_test(size_t from, size_t to)
 
 	obj = cst_malloc((size + 1) * sizeof(char));
 	for (size_t i = from; i <= to; i++)
-		obj[i - from] = ARGS.test_objs[i];
+		obj[i - from] = CST_ARGS.test_objs[i];
 	obj[size] = '\0';
-	for (sep = to; sep != from && ARGS.test_objs[sep] != '/'; sep--)
+	for (sep = to; sep != from && CST_ARGS.test_objs[sep] != '/'; sep--)
 		;
 	if (sep == from)
 		dir = NULL;
 	else {
 		dir = cst_malloc((sep - from + 1) * sizeof(char));
 		for (size_t i = from; i <= sep; i++)
-			dir[i - from] = ARGS.test_objs[i];
+			dir[i - from] = CST_ARGS.test_objs[i];
 		dir[sep - from] = '\0';
 	}
 	cst_store_test(dir, obj);
@@ -176,22 +170,22 @@ static void cst_tokenize_tests(void)
 	size_t	last_i = 0;
 	char	ch;
 
-	for (; (ch = ARGS.test_objs[i]) != '\0'; i++) {
+	for (; (ch = CST_ARGS.test_objs[i]) != '\0'; i++) {
 		if (ch == ' ') {
 			cst_tokenize_test(last_i, i);
 			last_i = i + 1;
 		}
 	}
 	cst_tokenize_test(last_i, i);
-	free(ARGS.test_objs);
-	ARGS.test_objs = NULL;
+	free(CST_ARGS.test_objs);
+	CST_ARGS.test_objs = NULL;
 }
 
 /* 
  - Internal sources compilation
  */
 
-static bool is_up_to_date(const char *src, const char *obj)
+static bool cst_is_up_to_date(const char *src, const char *obj)
 {
 	struct stat st_src, st_obj;
 
@@ -202,18 +196,18 @@ static bool is_up_to_date(const char *src, const char *obj)
 	return st_obj.st_mtime >= st_src.st_mtime;
 }
 
-static void compile_internal(const char *file)
+static void cst_compile_internal(const char *file)
 {
 	char *src = cst_fmt("%s/%s.c", CST_DIR, file);
 	char *obj = cst_fmt("%s/objs/%s.o", CST_DIR, file);
 
-	if (is_up_to_date(src, obj)) {
-		vdebug(CST_BBLUE "Up to date" CST_GRAY ": " CST_YELLOW "%s", obj);
+	if (cst_is_up_to_date(src, obj)) {
+		cst_vdebug(CST_BBLUE "Up to date" CST_GRAY ": " CST_YELLOW "%s", obj);
 		free(src); free(obj);
 		return;
 	}
 	char *cmd = cst_fmt("gcc -c %s -o %s", src, obj);
-	vdebug(CST_BBLUE "Compiling" CST_GRAY ": " CST_YELLOW "%s", src);
+	cst_vdebug(CST_BBLUE "Compiling" CST_GRAY ": " CST_YELLOW "%s", src);
 	if (system(cmd) != 0) {
 		free(src); free(obj); free(cmd);
 		cst_exit(CST_COMPILE_INTERNAL_ERR, CST_COMPILE_INTERNAL_ERRC);
@@ -221,7 +215,7 @@ static void compile_internal(const char *file)
 	free(src); free(obj); free(cmd);
 }
 
-static void compile_internals(void)
+static void cst_compile_internals(void)
 {
 	char	*buf;
 	size_t	compile_ms = cst_now_ms();
@@ -238,25 +232,25 @@ static void compile_internals(void)
 		cst_exit("Failed to create \"objs/internal\" directory", 3);
 	}
 	free(buf);
-	compile_internal("cst_config");
-	if (ARGS.memcheck)
-		compile_internal("internal/cst_memcheck");
-	if (ARGS.sighandler)
-		compile_internal("internal/cst_signal_handler");
-	vdebug(CST_BBLUE"Internals compiled in"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - compile_ms);
+	cst_compile_internal("cst_config");
+	if (CST_ARGS.memcheck)
+		cst_compile_internal("internal/cst_memcheck");
+	if (CST_ARGS.sighandler)
+		cst_compile_internal("internal/cst_signal_handler");
+	cst_vdebug(CST_BBLUE"Internals compiled in"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - compile_ms);
 }
 
 /*
  - Args validation
  */
 
-static void validate_cst_args(void)
+static void cst_validate_args(void)
 {
 	int	e = 0;
 
-	if (ARGS.test_objs == NULL)
+	if (CST_ARGS.test_objs == NULL)
 		e += printf(CST_ERR_PREFIX"No test objects provided"CST_RES"\n");
-	if (ARGS.proj_objs == NULL)
+	if (CST_ARGS.proj_objs == NULL)
 		e += printf(CST_ERR_PREFIX"No program objects provided"CST_RES"\n");
 	if (e != 0)
 		cst_exit(NULL, ARG_VALIDATION_ERRC);
@@ -266,7 +260,7 @@ static void validate_cst_args(void)
  - Building args
  */
 
-static char *sanitize_arg(const char *arg)
+static char *cst_sanitize_arg(const char *arg)
 {
 	size_t	final_size = 0;
 	size_t	si = 0;
@@ -290,29 +284,29 @@ static char *sanitize_arg(const char *arg)
 	return (sanitized);
 }
 
-static void init_cst_args(int argc, char **argv)
+static void cst_init_args(int argc, char **argv)
 {
-	ARGS.test_objs = NULL;
-	ARGS.proj_objs = NULL;
-	ARGS.extra_flags = NULL;
-	ARGS.memcheck = true;
-	ARGS.sighandler = true;
+	CST_ARGS.test_objs = NULL;
+	CST_ARGS.proj_objs = NULL;
+	CST_ARGS.extra_flags = NULL;
+	CST_ARGS.memcheck = true;
+	CST_ARGS.sighandler = true;
 	for (int i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (strncmp(arg, "proj_objs=", 10) == 0)
-			ARGS.proj_objs = sanitize_arg(argv[i] + 10);
+			CST_ARGS.proj_objs = cst_sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "test_objs=", 10) == 0)
-			ARGS.test_objs = sanitize_arg(argv[i] + 10);
+			CST_ARGS.test_objs = cst_sanitize_arg(argv[i] + 10);
 		else if (strncmp(arg, "cflags=", 7) == 0)
-			ARGS.extra_flags = sanitize_arg(argv[i] + 7);
+			CST_ARGS.extra_flags = cst_sanitize_arg(argv[i] + 7);
 		else if (strncmp(arg, "cst_dir=", 8) == 0)
 			CST_DIR = strdup(argv[i] + 8); // We trust the user on this one
 		else if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
 			CST_DEBUG = true;
 		else if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
-			ARGS.memcheck = false;
+			CST_ARGS.memcheck = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
-			ARGS.sighandler = false;
+			CST_ARGS.sighandler = false;
 	}
 }
 
@@ -320,7 +314,7 @@ static void init_cst_args(int argc, char **argv)
  - Get CST directory
  */
 
-static char *get_cst_dir(const char *argv0)
+static char *cst_get_dir(const char *argv0)
 {
 	char	*dir = NULL;
 
@@ -342,21 +336,21 @@ static char *get_cst_dir(const char *argv0)
 int main(int argc, char **argv)
 {
 	CST_START_DATE = cst_now_ms();
-	init_cst_args(argc, argv);
+	cst_init_args(argc, argv);
 	if (CST_DIR == NULL)
-		CST_DIR = get_cst_dir(argv[0]);
+		CST_DIR = cst_get_dir(argv[0]);
 	if (CST_DIR == NULL)
 		cst_exit(CST_DIR_UNKNOWN_ERR, CST_DIR_UNKNOWN_ERRC);
-	vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
-	validate_cst_args();
-	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
-	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
-	compile_internals();
+	cst_vdebug(CST_BBLUE"CST Directory"CST_GRAY": "CST_YELLOW"%s", CST_DIR);
+	cst_validate_args();
+	cst_vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (CST_ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
+	cst_vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (CST_ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
+	cst_compile_internals();
 	cst_tokenize_tests();
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next) {
-		vdebug("Test at: %s", tmp->dir);
-		vdebug("- Obj: %s", tmp->obj);
-		vdebug("- Executed: %s", (tmp->executed ? CST_GREEN"YES" : CST_RED"NO"));
+		cst_vdebug("Test at: %s", tmp->dir);
+		cst_vdebug("- Obj: %s", tmp->obj);
+		cst_vdebug("- Executed: %s", (tmp->executed ? CST_GREEN"YES" : CST_RED"NO"));
 	}
 	cst_exit(NULL, EXIT_SUCCESS);
 }
