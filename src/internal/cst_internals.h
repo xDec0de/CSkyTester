@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-typedef struct cst_category
+typedef struct cst_test
 {
-	char				*dir;
-	char				*alias;
-	char				**objs;
-	struct cst_category	*next;
-}	cst_category;
+	char		*dir;
+	char		*obj;
+	bool		executed;
+	struct cst_test	*next;
+}	cst_test;
 
 typedef struct cst_args
 {
