@@ -6,9 +6,10 @@
 
 typedef struct cst_category
 {
-	char	*dir;
-	char	*alias;
-	char	**objs;
+	char				*dir;
+	char				*alias;
+	char				**objs;
+	struct cst_category	*next;
 }	cst_category;
 
 typedef struct cst_args

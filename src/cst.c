@@ -12,15 +12,13 @@
 #include <limits.h>
 #include <libgen.h>
 
+static bool			CST_DEBUG = false;
+
 static size_t		CST_START_DATE = ULONG_MAX;
 static char			*CST_DIR = NULL;
 static cst_args		ARGS;
-static bool			CST_DEBUG = false;
 
-static const char	*CST_SOURCES =
-	"cst_config.c \
-	internal/cst_memcheck.c \
-	internal/cst_signal_handler.c";
+static cst_category	*CST_CATEGORIES = NULL;
 
 /*
  - Message utility
@@ -110,6 +108,55 @@ static void	*cst_malloc(size_t size)
 	if (ptr != NULL)
 		return ptr;
 	cst_exit(ALLOC_FAIL_ERR, ALLOC_FAIL_ERRC);
+}
+
+/*
+ - Prepare test categories
+ */
+
+static void cst_prepare_test(size_t from, size_t to)
+{
+	const size_t	size = to - from;
+	size_t			sep;
+	char			*dir;
+	char			*obj;
+
+	obj = cst_malloc((size + 1) * sizeof(char));
+	for (size_t i = from; i <= to; i++)
+		obj[i - from] = ARGS.test_objs[i];
+	obj[size] = '\0';
+	vdebug("Obj: %s", obj);
+	for (sep = to; sep != from && ARGS.test_objs[sep] != '/'; sep--)
+		;
+	if (sep == from)
+		dir = NULL;
+	else {
+		dir = cst_malloc((sep - from + 1) * sizeof(char));
+		for (size_t i = from; i <= sep; i++)
+			dir[i - from] = ARGS.test_objs[i];
+		dir[sep - from] = '\0';
+	}
+	vdebug("- Dir: %s", dir);
+	if (dir != NULL)
+		free(dir);
+	free(obj);
+}
+
+static void cst_prepare_categories(void)
+{
+	size_t	i = 0;
+	size_t	last_i = 0;
+	char	ch;
+
+	for (; (ch = ARGS.test_objs[i]) != '\0'; i++) {
+		if (ch == ' ') {
+			cst_prepare_test(last_i, i);
+			last_i = i + 1;
+		}
+	}
+	cst_prepare_test(last_i, i);
+	free(ARGS.test_objs);
+	ARGS.test_objs = NULL;
 }
 
 /* 
@@ -280,5 +327,6 @@ int main(int argc, char **argv)
 	vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
 	vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	compile_internals();
+	cst_prepare_categories();
 	cst_exit(NULL, EXIT_SUCCESS);
 }
