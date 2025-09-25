@@ -121,9 +121,18 @@ static void	*cst_malloc(size_t size)
  - Test execution
  */
 
-static void cst_run_test(cst_test *test)
+static void cst_run_test(cst_test *test, int *failed)
 {
-	cst_vdebug("- Test: %s", test->obj);
+	char	*cmd;
+
+	cmd = cst_fmt("gcc %s %s %s -Wl,--wrap=malloc -Wl,--wrap=free -o %s/_IGNORE_CST_TEST_RUN_", test->obj, CST_INTERNALS, CST_ARGS.proj_objs, CST_DIR);
+	system(cmd);
+	free(cmd);
+	cmd = cst_fmt("%s/_IGNORE_CST_TEST_RUN_", CST_DIR);
+	if (system(cmd) != EXIT_SUCCESS)
+		(*failed)++;
+	printf("\n");
+	free(cmd);
 	test->executed = true;
 }
 
@@ -131,6 +140,7 @@ static void	cst_run_tests()
 {
 	char	*dir = NULL;
 	size_t	remaining = 0;
+	int		failed = 0;
 
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
 		remaining++;
@@ -141,15 +151,19 @@ static void	cst_run_tests()
 				continue;
 			if (dir == NULL) {
 				dir = test->dir;
-				cst_vdebug("Category: %s", dir);
-				cst_run_test(test);
+				printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", dir);
+				cst_run_test(test, &failed);
 				remaining--;
 			} else if (strcmp(dir, test->dir) == 0) {
-				cst_run_test(test);
+				cst_run_test(test, &failed);
 				remaining--;
 			}
 		}
 	}
+	if (failed == 0)
+		printf(CST_BGREEN "\n✅ All tests passed!" CST_RES "\n");
+	else
+		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%i" CST_BRED " test(s)" CST_RES "\n");
 }
 
 /*

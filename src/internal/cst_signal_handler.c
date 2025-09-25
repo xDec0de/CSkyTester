@@ -26,7 +26,7 @@ char *cst_getsigname(int signum)
 
 void cst_sighandler(int signum)
 {
-	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)"CST_RES"\n",
+	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)"CST_RES,
 		CST_TEST_NAME, signum, cst_getsigname(signum));
 	exit(EXIT_FAILURE);
 }
