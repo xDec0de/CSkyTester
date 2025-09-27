@@ -11,7 +11,9 @@ TEST_DIR = $(CURDIR)/test
 
 # Find test & project .c files
 PROJ_SRC := $(shell find $(SRCS_DIR) -type f -name '*.c')
-TEST_SRC := $(shell find $(TEST_DIR) -type f -name '*.c')
+# TEST_SRC := $(shell find $(TEST_DIR) -type f -name '*.c')
+# For now, we will only include bool.c until we switch to the new test registration format
+TEST_SRC = $(TEST_DIR)/bool.c
 
 # Compile them to generate .o files
 PROJ_OBJS = $(PROJ_SRC:%.c=%.o)
