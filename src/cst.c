@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <libgen.h>
+#include <sys/wait.h>
 
 static bool			CST_DEBUG = false;
 static size_t		CST_START_DATE = ULONG_MAX;
@@ -118,16 +119,23 @@ static void	*cst_malloc(size_t size)
  - Test execution
  */
 
-static void cst_run_test(cst_test *test, int *failed)
+static bool cst_run_test(cst_test *test)
 {
 	char	*cmd;
+	pid_t	pid = fork();
 
-	printf("Running test %s @ %s\n", test->name, test->category);
-	CST_TEST_NAME = test->name;
-	CST_FAIL_TIP = "";
-	CST_SHOW_FAIL_DETAILS = true;
-	test->func();
-	test->executed = true;
+	if (pid == -1)
+		cst_exit("Failed to fork", 2);
+	if (pid == 0) {
+		CST_TEST_NAME = test->name;
+		test->func();
+		cst_exit(NULL, EXIT_SUCCESS);
+	} else {
+		int	ec = 0;
+		waitpid(pid, &ec, 0);
+		test->executed = true;
+		return (ec == 0);
+	}
 }
 
 static void	cst_run_tests()
@@ -146,10 +154,12 @@ static void	cst_run_tests()
 			if (cat == NULL) {
 				cat = test->category;
 				printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", cat);
-				cst_run_test(test, &failed);
+				if (!cst_run_test(test))
+					failed++;
 				remaining--;
 			} else if (strcmp(cat, test->category) == 0) {
-				cst_run_test(test, &failed);
+				if (!cst_run_test(test))
+					failed++;
 				remaining--;
 			}
 		}
@@ -157,7 +167,7 @@ static void	cst_run_tests()
 	if (failed == 0)
 		printf(CST_BGREEN "\n✅ All tests passed!" CST_RES "\n");
 	else
-		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%i" CST_BRED " test(s)" CST_RES "\n");
+		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%d" CST_BRED " test(s)" CST_RES "\n", failed);
 }
 
 /*

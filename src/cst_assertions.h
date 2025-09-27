@@ -53,7 +53,7 @@ extern char	*CST_FAIL_TIP;
 void cst_register_test(const char *category, const char *name, void (*func)(void));
 
 #define __CST_STRCAT_IMPL(a,b) a##b
-#define __CST_STRCAT(a,b)  __CST_STRCAT_IMPL(a,b)
+#define __CST_STRCAT(a,b) __CST_STRCAT_IMPL(a,b)
 
 #define __CST_TEST_IMPL(CAT, NAME, ID) \
 	static void __CST_STRCAT(__cst_fn_, ID)(void); \
@@ -72,7 +72,7 @@ void cst_register_test(const char *category, const char *name, void (*func)(void
 #define CST_ASSERT(expr, func, errmsg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
-		fprintf(stderr, CST_GREEN"✅ %s"CST_RES, CST_TEST_NAME);\
+		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
 		break ;\
 	}\
 	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
@@ -83,7 +83,7 @@ void cst_register_test(const char *category, const char *name, void (*func)(void
 	}\
 	if (CST_FAIL_TIP != NULL)\
 		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
-	fprintf(stderr, CST_RES);\
+	fprintf(stderr, "\n"CST_RES);\
 	CST_FAIL_TIP = NULL;\
 	exit(EXIT_FAILURE);\
 } while (0)
