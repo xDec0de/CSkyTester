@@ -1,16 +1,12 @@
 
 #include "internal/cst_internals.h"
 #include "cst_color.h"
-#include <sys/stat.h>
 #include <time.h>
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
-#include <libgen.h>
 #include <sys/wait.h>
 
 static size_t		CST_START_DATE = ULONG_MAX;
