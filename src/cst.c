@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 typedef struct cst_test
 {
@@ -35,15 +36,6 @@ bool	CST_SHOW_FAIL_DETAILS	= true;
  - Program exit util
  */
 
-static size_t cst_now_ms(void)
-{
-	struct timespec ts;
-
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
-		return (size_t) - 1;
-	return ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
-}
-
 static void	cst_exit(char *errmsg, int ec)
 {
 	if (CST_TESTS != NULL) {
@@ -56,6 +48,78 @@ static void	cst_exit(char *errmsg, int ec)
 	if (errmsg != NULL)
 		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
 	exit(ec);
+}
+
+/*
+ - Signal handler
+ */
+
+char *cst_getsigname(int signum)
+{
+	if (signum == SIGABRT)
+		return ("SIGABRT");
+	if (signum == SIGFPE)
+		return ("SIGFPE");
+	if (signum == SIGILL)
+		return ("SIGILL");
+	if (signum == SIGINT)
+		return ("SIGINT");
+	if (signum == SIGSEGV)
+		return ("SIGSEGV / Segmentation fault");
+	if (signum == SIGTERM)
+		return ("SIGTERM");
+	if (signum == SIGBUS)
+		return ("SIGBUS");
+	if (signum == SIGQUIT)
+		return ("SIGQUIT");
+	if (signum == SIGHUP)
+		return ("SIGHUP");
+	return ("???");
+}
+
+void cst_sighandler(int signum)
+{
+	if (!CST_SIGHANDLER)
+		return ;
+	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
+		CST_TEST_NAME, signum, cst_getsigname(signum));
+	cst_exit(NULL, EXIT_FAILURE);
+}
+
+__attribute__((constructor))
+static void cst_auto_init(void)
+{
+	static bool handling = false;
+
+	if (handling)
+		return;
+	handling = true;
+
+	// Crash signals
+	signal(SIGABRT, cst_sighandler);
+	signal(SIGFPE,  cst_sighandler);
+	signal(SIGILL,  cst_sighandler);
+	signal(SIGSEGV, cst_sighandler);
+	signal(SIGBUS,  cst_sighandler);
+
+	// Interruptions / terminations
+	signal(SIGINT,  cst_sighandler);
+	signal(SIGTERM, cst_sighandler);
+	signal(SIGQUIT, cst_sighandler);
+	signal(SIGHUP,  cst_sighandler);
+}
+
+/*
+ - Time getter
+ */
+
+static size_t cst_now_ms(void)
+{
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1)
+		return (size_t) - 1;
+	return ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 
 /*
