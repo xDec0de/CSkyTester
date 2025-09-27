@@ -73,7 +73,6 @@ static void	cst_exit(char *errmsg, int ec)
 	}
 	if (errmsg != NULL)
 		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
-	cst_vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
 	exit(ec);
 }
 
@@ -224,5 +223,6 @@ int main(int argc, char **argv)
 	cst_vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (CST_ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
 	cst_vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (CST_ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	cst_run_tests();
+	cst_vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
 	cst_exit(NULL, EXIT_SUCCESS);
 }
