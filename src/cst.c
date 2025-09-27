@@ -13,7 +13,6 @@
 #include <libgen.h>
 #include <sys/wait.h>
 
-static bool			CST_DEBUG = false;
 static size_t		CST_START_DATE = ULONG_MAX;
 static cst_args		CST_ARGS;
 static cst_test		*CST_TESTS = NULL;
@@ -25,23 +24,6 @@ static cst_test		*CST_TESTS = NULL;
 char	*CST_TEST_NAME			= "";
 char	*CST_FAIL_TIP			= NULL;
 bool	CST_SHOW_FAIL_DETAILS	= true;
-
-/*
- - Message utility
- */
-
-static void cst_vdebug(const char *msg, ...)
-{
-	va_list	args;
-
-	if (!CST_DEBUG)
-		return ;
-	va_start(args, msg);
-	printf(CST_GRAY "[" CST_BWHITE "CST DEBUG" CST_GRAY "] "CST_WHITE);
-	vprintf(msg, args);
-	va_end(args);
-	printf(CST_RES "\n");
-}
 
 /*
  - Program exit util
@@ -56,12 +38,6 @@ static size_t cst_now_ms(void)
 	return ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 
-static void	cst_free(void *ptr)
-{
-	if (ptr != NULL)
-		free(ptr);
-}
-
 static void	cst_exit(char *errmsg, int ec)
 {
 	if (CST_TESTS != NULL) {
@@ -74,30 +50,6 @@ static void	cst_exit(char *errmsg, int ec)
 	if (errmsg != NULL)
 		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
 	exit(ec);
-}
-
-/*
- - String format util
- */
-
-static char *cst_fmt(const char *fmt, ...)
-{
-	va_list	tmp, args;
-	int		size;
-	char	*buf;
-
-	va_start(tmp, fmt);
-	va_copy(args, tmp);
-	size = vsnprintf(NULL, 0, fmt, tmp);
-	va_end(tmp);
-	if (size < 0)
-		return (va_end(args), NULL);
-	buf = malloc((size + 1) * sizeof(char));
-	if (buf == NULL)
-		return (va_end(args), NULL);
-	vsnprintf(buf, size + 1, fmt, args);
-	va_end(args);
-	return (buf);
 }
 
 /*
@@ -164,9 +116,10 @@ static void	cst_run_tests()
 		}
 	}
 	if (failed == 0)
-		printf(CST_BGREEN "\n✅ All tests passed!" CST_RES "\n");
+		printf(CST_BGREEN "\n✅ All tests passed!");
 	else
-		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%d" CST_BRED " test(s)" CST_RES "\n", failed);
+		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%d" CST_BRED " test(s)", failed);
+	printf(CST_GRAY " - " CST_YELLOW "%zums" CST_RES "\n", (cst_now_ms() - CST_START_DATE));
 }
 
 /*
@@ -201,9 +154,7 @@ static void cst_init_args(int argc, char **argv)
 	CST_ARGS.sighandler = true;
 	for (int i = 1; i < argc; i++) {
 		char *arg = argv[i];
-		if (strcmp(arg, "-debug") == 0 || strcmp(arg, "-d") == 0)
-			CST_DEBUG = true;
-		else if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
+		if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
 			CST_ARGS.memcheck = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
 			CST_ARGS.sighandler = false;
@@ -220,9 +171,6 @@ int main(int argc, char **argv)
 	if (CST_TESTS == NULL)
 		cst_exit("No tests to run", 1);
 	cst_init_args(argc, argv);
-	cst_vdebug(CST_BBLUE"Internal signal handler"CST_GRAY": %s", (CST_ARGS.sighandler ? CST_GREEN"YES" : CST_RED"NO"));
-	cst_vdebug(CST_BBLUE"Internal memcheck"CST_GRAY": %s", (CST_ARGS.memcheck ? CST_GREEN"YES" : CST_RED"NO"));
 	cst_run_tests();
-	cst_vdebug(CST_BBLUE"Time elapsed"CST_GRAY": "CST_BYELLOW"%zums", cst_now_ms() - CST_START_DATE);
 	cst_exit(NULL, EXIT_SUCCESS);
 }
