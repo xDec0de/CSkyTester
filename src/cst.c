@@ -163,10 +163,12 @@ static void	cst_run_tests()
 {
 	char	*cat = NULL;
 	size_t	remaining = 0;
-	int		failed = 0;
+	size_t	failed = 0;
+	size_t	total = 0;
 
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
 		remaining++;
+	total = remaining;
 	while (remaining != 0) {
 		cat = NULL;
 		for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
@@ -186,9 +188,9 @@ static void	cst_run_tests()
 		}
 	}
 	if (failed == 0)
-		printf(CST_BGREEN "\n✅ All tests passed!");
+		printf(CST_BGREEN "\n✅ All %zu tests passed!", total);
 	else
-		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%d" CST_BRED " test(s)", failed);
+		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%zu" CST_GRAY "/" CST_YELLOW "%zu" CST_BRED " test(s)", failed, total);
 	printf(CST_GRAY " - " CST_YELLOW "%zums" CST_RES "\n", (cst_now_ms() - CST_START_DATE));
 }
 
