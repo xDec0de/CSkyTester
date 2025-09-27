@@ -47,6 +47,25 @@ extern bool	CST_SHOW_FAIL_DETAILS;
 extern char	*CST_FAIL_TIP;
 
 /*
+ - Test registration
+ */
+
+void cst_register_test(const char *category, const char *name, void (*fn)(void));
+
+#define __CST_STRCAT_IMPL(a,b) a##b
+#define __CST_STRCAT(a,b)  __CST_STRCAT_IMPL(a,b)
+
+#define __CST_TEST_IMPL(CAT, NAME, ID) \
+	static void __CST_STRCAT(__cst_fn_, ID)(void); \
+	static void __attribute__((constructor)) \
+	__CST_STRCAT(__cst_ctor_, ID)(void) { \
+		cst_register_test((CAT), (NAME), __CST_STRCAT(__cst_fn_, ID)); \
+	} \
+	static void __CST_STRCAT(__cst_fn_, ID)(void)
+
+#define TEST(category, name) __CST_TEST_IMPL((category), (name), __COUNTER__)
+
+/*
  - Shared assertion logic
  */
 
