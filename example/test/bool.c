@@ -1,4 +1,5 @@
 #include "cst_assertions.h"
+#include "cst_example.h"
 
 static const char *category = "Bool assertions";
 

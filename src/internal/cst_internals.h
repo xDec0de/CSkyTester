@@ -6,17 +6,15 @@
 
 typedef struct cst_test
 {
-	char		*dir;
-	char		*obj;
-	bool		executed;
+	char			*category;
+	char			*name;
+	void			(*func)(void);
+	bool			executed;
 	struct cst_test	*next;
 }	cst_test;
 
 typedef struct cst_args
 {
-	char	*test_objs;
-	char	*proj_objs;
-	char	*extra_flags;
 	bool	memcheck;
 	bool	sighandler;
 }	cst_args;

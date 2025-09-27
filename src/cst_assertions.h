@@ -50,7 +50,7 @@ extern char	*CST_FAIL_TIP;
  - Test registration
  */
 
-void cst_register_test(const char *category, const char *name, void (*fn)(void));
+void cst_register_test(const char *category, const char *name, void (*func)(void));
 
 #define __CST_STRCAT_IMPL(a,b) a##b
 #define __CST_STRCAT(a,b)  __CST_STRCAT_IMPL(a,b)
