@@ -1,6 +1,6 @@
 
-#include "internal/cst_internals.h"
 #include "cst_color.h"
+#include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,9 +9,19 @@
 #include <limits.h>
 #include <sys/wait.h>
 
+typedef struct cst_test
+{
+	char			*category;
+	char			*name;
+	void			(*func)(void);
+	bool			executed;
+	struct cst_test	*next;
+}	cst_test;
+
 static size_t		CST_START_DATE = ULONG_MAX;
-static cst_args		CST_ARGS;
 static cst_test		*CST_TESTS = NULL;
+static bool			CST_MEMCHECK = true;
+static bool			CST_SIGHANDLER = true;
 
 /*
  - Test configuration
@@ -44,7 +54,7 @@ static void	cst_exit(char *errmsg, int ec)
 		CST_TESTS = NULL;
 	}
 	if (errmsg != NULL)
-		printf(CST_ERR_PREFIX"%s"CST_RES"\n", errmsg);
+		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
 	exit(ec);
 }
 
@@ -59,7 +69,7 @@ static void	*cst_malloc(size_t size)
 	ptr = malloc(size);
 	if (ptr != NULL)
 		return ptr;
-	cst_exit(ALLOC_FAIL_ERR, ALLOC_FAIL_ERRC);
+	cst_exit("Malloc failed", 100);
 }
 
 /*
@@ -144,19 +154,6 @@ void cst_register_test(const char *category, const char *name, void (*func)(void
 	}
 }
 
-static void cst_init_args(int argc, char **argv)
-{
-	CST_ARGS.memcheck = true;
-	CST_ARGS.sighandler = true;
-	for (int i = 1; i < argc; i++) {
-		char *arg = argv[i];
-		if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
-			CST_ARGS.memcheck = false;
-		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
-			CST_ARGS.sighandler = false;
-	}
-}
-
 /*
  - Program entry point
  */
@@ -166,7 +163,13 @@ int main(int argc, char **argv)
 	CST_START_DATE = cst_now_ms();
 	if (CST_TESTS == NULL)
 		cst_exit("No tests to run", 1);
-	cst_init_args(argc, argv);
+	for (int i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
+			CST_MEMCHECK = false;
+		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
+			CST_SIGHANDLER = false;
+	}
 	cst_run_tests();
 	cst_exit(NULL, EXIT_SUCCESS);
 }
