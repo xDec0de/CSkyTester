@@ -6,7 +6,7 @@ TEST_DIR  = $(CURDIR)/test
 CST_BIN = $(CURDIR)/cst
 
 PROJ_SRCS := $(shell find $(SRCS_DIR) -type f -name '*.c')
-TEST_SRCS := $(TEST_DIR)/bool.c
+TEST_SRCS := $(TEST_DIR)/bool.c $(TEST_DIR)/char.c
 CST_SRCS  := $(CST_DIR)/cst.c
 
 ALL_SRCS  := $(PROJ_SRCS) $(TEST_SRCS) $(CST_SRCS)
@@ -20,7 +20,7 @@ $(CST_BIN): $(ALL_SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 test: $(CST_BIN)
-	-@$(CST_BIN)
+	-@$(CST_BIN) -d
 	@rm -rf $(CST_BIN)
 
 clean:
