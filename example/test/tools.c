@@ -1,6 +1,6 @@
 #include "cst.h"
 
-static const char *category = "Tests for crash detection";
+static const char *category = "Tests for built-in tools";
 
 TEST(category, "Force SIGSEGV") {
 	char *null_str = NULL;
@@ -12,4 +12,9 @@ TEST(category, "Force double free") {
 
 	free(ptr);
 	free(ptr);
+}
+
+TEST(category, "Force memory leak (Shouldn't pass)") {
+	char *ptr = malloc(42);
+	ASSERT_NULL(NULL);
 }
