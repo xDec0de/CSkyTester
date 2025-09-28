@@ -79,15 +79,12 @@ char *cst_getsigname(int signum)
 
 void cst_sighandler(int signum)
 {
-	if (!CST_SIGHANDLER)
-		return ;
 	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
 		CST_TEST_NAME, signum, cst_getsigname(signum));
 	cst_exit(NULL, EXIT_FAILURE);
 }
 
-__attribute__((constructor))
-static void cst_auto_init(void)
+static void cst_init_sighandler(void)
 {
 	static bool handling = false;
 
@@ -236,6 +233,8 @@ int main(int argc, char **argv)
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
 			CST_SIGHANDLER = false;
 	}
+	if (CST_SIGHANDLER)
+		cst_init_sighandler();
 	cst_run_tests();
 	cst_exit(NULL, EXIT_SUCCESS);
 }
