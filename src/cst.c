@@ -1,5 +1,5 @@
 
-#include "cst_color.h"
+#include "cst.h"
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
@@ -12,8 +12,8 @@
 
 typedef struct cst_test
 {
-	char			*category;
-	char			*name;
+	const char		*category;
+	const char		*name;
 	void			(*func)(void);
 	bool			executed;
 	struct cst_test	*next;
@@ -145,7 +145,7 @@ static bool cst_run_test(cst_test *test)
 	if (pid == -1)
 		cst_exit("Failed to fork", 2);
 	if (pid == 0) {
-		CST_TEST_NAME = test->name;
+		CST_TEST_NAME = (char *) test->name;
 		test->func();
 		cst_exit(NULL, EXIT_SUCCESS);
 	} else {
@@ -172,7 +172,7 @@ static void	cst_run_tests()
 			if (test->executed)
 				continue;
 			if (cat == NULL) {
-				cat = test->category;
+				cat = (char *) test->category;
 				printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", cat);
 				if (!cst_run_test(test))
 					failed++;
