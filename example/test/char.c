@@ -1,4 +1,4 @@
-#include "cst_assertions.h"
+#include "cst.h"
 #include "cst_example.h"
 
 static const char *category = "Char assertions";

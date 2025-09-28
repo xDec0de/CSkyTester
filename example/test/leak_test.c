@@ -1,4 +1,4 @@
-#include "cst_assertions.h"
+#include "cst.h"
 
 TEST("Memory tests", "Force memory leak (Shouldn't pass)") {
 	char *ptr = malloc(42);

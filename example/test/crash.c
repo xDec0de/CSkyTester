@@ -1,4 +1,4 @@
-#include "cst_assertions.h"
+#include "cst.h"
 
 static const char *category = "Tests for crash detection";
 
