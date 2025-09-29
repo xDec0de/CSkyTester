@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <ctype.h>
 
 typedef struct cst_test
 {
@@ -238,6 +239,18 @@ void cst_register_test(const char *category, const char *name, void (*func)(void
  - Program entry point
  */
 
+static void get_timeout(const char *timeout)
+{
+	long	ms = atol(timeout);
+
+	for (size_t i = 0; timeout[i] != '\0'; i++)
+		if (!isdigit(timeout[i]))
+			cst_exit("Invalid -timeout value. Zero or a positive number is required", 1);
+	if (ms < 0)
+		ms = 0;
+	CST_TIMEOUT_MS = ms;
+}
+
 int main(int argc, char **argv)
 {
 	CST_START_DATE = cst_now_ms();
@@ -249,6 +262,8 @@ int main(int argc, char **argv)
 			CST_MEMCHECK = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
 			CST_SIGHANDLER = false;
+		else if (strcmp(arg, "-timeout="))
+			get_timeout(arg + 9);
 	}
 	if (CST_SIGHANDLER)
 		cst_init_sighandler();
