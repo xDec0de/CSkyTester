@@ -25,6 +25,7 @@ static cst_test		*CST_TESTS = NULL;
 static bool			CST_MEMCHECK = true;
 static bool			CST_SIGHANDLER = true;
 static size_t		CST_TIMEOUT_MS = 10;
+static bool			CST_ON_TEST = false;
 
 /*
  - Test configuration
@@ -81,8 +82,13 @@ char *cst_getsigname(int signum)
 
 void cst_sighandler(int signum)
 {
-	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
-		CST_TEST_NAME, signum, cst_getsigname(signum));
+	if (signum == SIGINT || signum == SIGTERM || signum == SIGQUIT || signum == SIGHUP) {
+		if (!CST_ON_TEST)
+			printf(CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, cst_getsigname(signum));
+	} else {
+		fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
+			CST_TEST_NAME, signum, cst_getsigname(signum));
+	}
 	cst_exit(NULL, EXIT_FAILURE);
 }
 
@@ -146,6 +152,7 @@ static bool cst_run_test(cst_test *test)
 	if (pid == -1)
 		cst_exit("Failed to fork", 2);
 	if (pid == 0) {
+		CST_ON_TEST = true;
 		CST_TEST_NAME = (char *) test->name;
 		test->func();
 		cst_exit(NULL, EXIT_SUCCESS);
