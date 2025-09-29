@@ -1,4 +1,5 @@
 #include "cst.h"
+#include <unistd.h>
 
 static const char *category = "Tests for built-in tools";
 
@@ -17,4 +18,9 @@ TEST(category, "Force double free") {
 TEST(category, "Force memory leak (Shouldn't pass)") {
 	char *ptr = malloc(42);
 	ASSERT_NULL(NULL);
+}
+
+TEST(category, "Force timeout") {
+	while (true)
+		sleep(1);
 }

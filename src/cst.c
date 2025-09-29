@@ -23,6 +23,7 @@ static size_t		CST_START_DATE = ULONG_MAX;
 static cst_test		*CST_TESTS = NULL;
 static bool			CST_MEMCHECK = true;
 static bool			CST_SIGHANDLER = true;
+static size_t		CST_TIMEOUT_MS = 10;
 
 /*
  - Test configuration
@@ -139,8 +140,7 @@ static void	*cst_malloc(size_t size)
 
 static bool cst_run_test(cst_test *test)
 {
-	char	*cmd;
-	pid_t	pid = fork();
+	pid_t pid = fork();
 
 	if (pid == -1)
 		cst_exit("Failed to fork", 2);
@@ -149,10 +149,27 @@ static bool cst_run_test(cst_test *test)
 		test->func();
 		cst_exit(NULL, EXIT_SUCCESS);
 	} else {
-		int	ec = 0;
-		waitpid(pid, &ec, 0);
+		int ec = 0;
 		test->executed = true;
-		return (ec == 0);
+		if (CST_TIMEOUT_MS <= 0) {
+			waitpid(pid, &ec, 0);
+			return (ec == 0);
+		}
+		size_t start = cst_now_ms();
+		while (true) {
+			pid_t res = waitpid(pid, &ec, WNOHANG);
+			if (res == -1)
+				cst_exit("waitpid failed", 3);
+			else if (res > 0)
+				return (ec == 0);
+			if ((cst_now_ms() - start) >= CST_TIMEOUT_MS) {
+				kill(pid, SIGKILL);
+				waitpid(pid, &ec, 0);
+				printf(CST_BRED"❌ %s "CST_GRAY"-"CST_RED" Timed out (%ld ms)\n"CST_RES, test->name, CST_TIMEOUT_MS);
+				return false;
+			}
+			usleep(50);
+		}
 	}
 }
 
