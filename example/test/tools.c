@@ -20,7 +20,7 @@ TEST(category, "Force memory leak (Shouldn't pass)") {
 	ASSERT_NULL(NULL);
 }
 
-TEST(category, "Force timeout") {
+TEST(category, "Force timeout", 1) {
 	while (true)
 		sleep(1);
 }

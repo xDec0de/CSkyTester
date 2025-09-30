@@ -16,6 +16,7 @@ typedef struct cst_test
 	const char		*category;
 	const char		*name;
 	void			(*func)(void);
+	long			timeout;
 	bool			executed;
 	struct cst_test	*next;
 }	cst_test;
@@ -24,8 +25,8 @@ static size_t		CST_START_DATE = ULONG_MAX;
 static cst_test		*CST_TESTS = NULL;
 static bool			CST_MEMCHECK = true;
 static bool			CST_SIGHANDLER = true;
-static size_t		CST_TIMEOUT_MS = 10;
 static bool			CST_ON_TEST = false;
+static long			CST_TIMEOUT_MS = 0;
 
 /*
  - Test configuration
@@ -159,7 +160,9 @@ static bool cst_run_test(cst_test *test)
 	} else {
 		int ec = 0;
 		test->executed = true;
-		if (CST_TIMEOUT_MS <= 0) {
+		if (test->timeout < 0)
+			test->timeout = CST_TIMEOUT_MS;
+		if (test->timeout <= 0) {
 			waitpid(pid, &ec, 0);
 			return (ec == 0);
 		}
@@ -170,10 +173,10 @@ static bool cst_run_test(cst_test *test)
 				cst_exit("waitpid failed", 3);
 			else if (res > 0)
 				return (ec == 0);
-			if ((cst_now_ms() - start) >= CST_TIMEOUT_MS) {
+			if ((cst_now_ms() - start) >= test->timeout) {
 				kill(pid, SIGKILL);
 				waitpid(pid, &ec, 0);
-				printf(CST_BRED"❌ %s "CST_GRAY"-"CST_RED" Timed out (%ld ms)\n"CST_RES, test->name, CST_TIMEOUT_MS);
+				printf(CST_BRED"❌ %s "CST_GRAY"-"CST_RED" Timed out (%ld ms)\n"CST_RES, test->name, test->timeout);
 				return false;
 			}
 			usleep(50);
@@ -220,13 +223,14 @@ static void	cst_run_tests()
  - Test registration
  */
 
-void cst_register_test(const char *category, const char *name, void (*func)(void))
+void cst_register_test(const char *category, const char *name, long timeout, void (*func)(void))
 {
 	cst_test	*test;
 
 	test = cst_malloc(sizeof(cst_test));
 	test->category = category;
 	test->name = name;
+	test->timeout = timeout;
 	test->func = func;
 	test->executed = false;
 	test->next = NULL;
@@ -253,9 +257,7 @@ static void get_timeout(const char *timeout)
 	for (size_t i = 0; timeout[i] != '\0'; i++)
 		if (!isdigit(timeout[i]))
 			cst_exit("Invalid -timeout value. Zero or a positive number is required", 1);
-	if (ms < 0)
-		ms = 0;
-	CST_TIMEOUT_MS = ms;
+	CST_TIMEOUT_MS = ms < 0 ? 0 : ms;
 }
 
 int main(int argc, char **argv)

@@ -48,20 +48,28 @@ extern char	*CST_FAIL_TIP;
  - Test registration
  */
 
-void cst_register_test(const char *category, const char *name, void (*func)(void));
+void cst_register_test(const char *category, const char *name, long timeout, void (*func)(void));
 
 #define __CST_STRCAT_IMPL(a,b) a##b
 #define __CST_STRCAT(a,b) __CST_STRCAT_IMPL(a,b)
 
-#define __CST_TEST_IMPL(CAT, NAME, ID) \
+#define __CST_GET_MACRO(_1, _2, _3, NAME, ...) NAME
+
+#define __CST_TEST_IMPL(CAT, NAME, TIMEOUT, ID) \
 	static void __CST_STRCAT(__cst_fn_, ID)(void); \
 	static void __attribute__((constructor)) \
 	__CST_STRCAT(__cst_ctor_, ID)(void) { \
-		cst_register_test((CAT), (NAME), __CST_STRCAT(__cst_fn_, ID)); \
+		cst_register_test((CAT), (NAME), (TIMEOUT), __CST_STRCAT(__cst_fn_, ID)); \
 	} \
 	static void __CST_STRCAT(__cst_fn_, ID)(void)
 
-#define TEST(category, name) __CST_TEST_IMPL((category), (name), __COUNTER__)
+#define __CST_TEST2(CAT, NAME) \
+	__CST_TEST_IMPL((CAT), (NAME), -1, __COUNTER__)
+
+#define __CST_TEST3(CAT, NAME, TIMEOUT) \
+	__CST_TEST_IMPL((CAT), (NAME), (TIMEOUT), __COUNTER__)
+
+#define TEST(...) __CST_GET_MACRO(__VA_ARGS__, __CST_TEST3, __CST_TEST2)(__VA_ARGS__)
 
 /*
  - Shared assertion logic
