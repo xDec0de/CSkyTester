@@ -2,6 +2,7 @@
 
 CSkyTester, or CST for short, is a flexible test suite for C projects.
 It allows you to create tests within seconds and runs them in milliseconds.
+Read the docs [here](https://docs.codersky.net/cst/)!
 
 CST has been designed with performance and ease of use in mind, and while it
 offers built-in tools like crash detection, it is by no means a replacement
@@ -48,7 +49,6 @@ you some details about it.
 
 ### Planned features
 
-- **Docs**: Docs for CST will be available as soon as CST is considered stable!
 - **Memory leak detection**: I already have a working-ish version of this, but
   it requires the user to compile with some specific flags, which I don't like.
   If I come up with a solution for this, it will be implemented.
