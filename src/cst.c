@@ -274,6 +274,8 @@ int main(int argc, char **argv)
 			CST_SIGHANDLER = false;
 		else if (strcmp(arg, "-timeout=") == 0)
 			get_timeout(arg + 9);
+		else
+			printf(CST_GRAY"["CST_BYELLOW"CST"CST_GRAY"] "CST_YELLOW"Ignored unknown argument"CST_GRAY": "CST_BYELLOW"%s"CST_RES"\n", arg);
 	}
 	if (CST_SIGHANDLER)
 		cst_init_sighandler();
