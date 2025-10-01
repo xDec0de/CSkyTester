@@ -201,7 +201,8 @@ static void	cst_run_tests()
 				continue;
 			if (cat == NULL) {
 				cat = (char *) test->category;
-				printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", cat);
+				if (cat[0] != '\0')
+					printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", cat);
 				if (!cst_run_test(test))
 					failed++;
 				remaining--;
@@ -228,7 +229,7 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 	cst_test	*test;
 
 	test = cst_malloc(sizeof(cst_test));
-	test->category = category;
+	test->category = category == NULL ? "" : category;
 	test->name = name;
 	test->timeout = timeout;
 	test->func = func;
