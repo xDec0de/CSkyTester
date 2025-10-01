@@ -230,7 +230,7 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 
 	test = cst_malloc(sizeof(cst_test));
 	test->category = category == NULL ? "" : category;
-	test->name = name;
+	test->name = name == NULL ? "???" : name;
 	test->timeout = timeout;
 	test->func = func;
 	test->executed = false;
