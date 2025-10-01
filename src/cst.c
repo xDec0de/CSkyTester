@@ -272,7 +272,7 @@ int main(int argc, char **argv)
 			CST_MEMCHECK = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
 			CST_SIGHANDLER = false;
-		else if (strcmp(arg, "-timeout="))
+		else if (strcmp(arg, "-timeout=") == 0)
 			get_timeout(arg + 9);
 	}
 	if (CST_SIGHANDLER)
