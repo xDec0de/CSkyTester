@@ -21,8 +21,19 @@ typedef struct cst_test
 	struct cst_test	*next;
 }	cst_test;
 
+typedef struct cst_runnable
+{
+	const char			*category;
+	void				(*func)(void);
+	struct cst_runnable *next;
+}	cst_runnable;
+
 static size_t		CST_START_DATE = ULONG_MAX;
 static cst_test		*CST_TESTS = NULL;
+static cst_runnable	*CST_AFTER_ALL = NULL;
+static cst_runnable	*CST_AFTER_EACH = NULL;
+static cst_runnable	*CST_BEFORE_ALL = NULL;
+static cst_runnable	*CST_BEFORE_EACH = NULL;
 static bool			CST_MEMCHECK = true;
 static bool			CST_SIGHANDLER = true;
 static bool			CST_ON_TEST = false;
@@ -218,6 +229,51 @@ static void	cst_run_tests()
 	else
 		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%zu" CST_GRAY "/" CST_YELLOW "%zu" CST_BRED " test(s)", failed, total);
 	printf(CST_GRAY " - " CST_YELLOW "%zums" CST_RES "\n", (cst_now_ms() - CST_START_DATE));
+}
+
+/*
+ - Runnable registration
+ */
+
+static cst_runnable *cst_register_runnable(cst_runnable *lst, const char *category, void (*func)(void))
+{
+	cst_runnable	*fixture;
+
+	fixture = cst_malloc(sizeof(cst_runnable));
+	fixture->category = category;
+	fixture->func = func;
+	fixture->next = NULL;
+	if (lst == NULL)
+		return (fixture);
+	else {
+		for (cst_runnable *tmp = lst; true; tmp = tmp->next) {
+			if (tmp->next == NULL) {
+				tmp->next = fixture;
+				break;
+			}
+		}
+		return (lst);
+	}
+}
+
+void cst_register_after_all(const char *category, void (*func)(void))
+{
+	CST_AFTER_ALL = cst_register_runnable(CST_AFTER_ALL, category, func);
+}
+
+void cst_register_after_each(const char *category, void (*func)(void))
+{
+	CST_AFTER_EACH = cst_register_runnable(CST_AFTER_EACH, category, func);
+}
+
+void cst_register_before_all(const char *category, void (*func)(void))
+{
+	CST_BEFORE_ALL = cst_register_runnable(CST_BEFORE_ALL, category, func);
+}
+
+void cst_register_before_each(const char *category, void (*func)(void))
+{
+	CST_BEFORE_EACH = cst_register_runnable(CST_BEFORE_EACH, category, func);
 }
 
 /*
