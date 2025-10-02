@@ -95,13 +95,28 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 } while (0)
 
 /*
+ - Runnables - Before all
+ */
+
+void cst_register_before_all(const char *category, void (*func)(void));
+
+#define __CST_BEFORE_ALL_IMPL(category, id) \
+	static void __CST_STRCAT(__cst_fn_, id)(void); \
+	static void __attribute__((constructor)) \
+	__CST_STRCAT(__cst_ctor_, id)(void) { \
+		cst_register_before_all((category), __CST_STRCAT(__cst_fn_, id)); \
+	} \
+	static void __CST_STRCAT(__cst_fn_, id)(void)
+
+#define CST_BEFORE_ALL(category) __CST_BEFORE_ALL_IMPL((category), __COUNTER__)
+
+/*
  - Assertions - NULL
  */
 
 #define ASSERT_NULL(expr) CST_ASSERT(expr == NULL, expr, fprintf(stderr, "Got NOT NULL when expecting NULL"));
 
 #define ASSERT_NOT_NULL(expr) CST_ASSERT(expr != NULL, expr, fprintf(stderr, "Got NULL when expecting NOT NULL"));
-
 
 /*
  - Assertions - Bool

@@ -157,9 +157,21 @@ static void	*cst_malloc(size_t size)
  - Test execution
  */
 
+static void cst_run_runnables(cst_runnable *lst, const char *category)
+{
+	for (cst_runnable *runnable = lst; runnable != NULL; runnable = runnable->next) {
+		if (category == NULL && runnable->category != NULL)
+			continue;
+		if (runnable->category == NULL && category != NULL)
+			continue;
+		if ((runnable->category == NULL && category == NULL) || strcmp(runnable->category, category) == 0)
+			runnable->func();
+	}
+}
+
 static bool cst_run_test(cst_test *test)
 {
-	pid_t pid = fork();
+	pid_t	pid = fork();
 
 	if (pid == -1)
 		cst_exit("Failed to fork", 2);
@@ -199,8 +211,10 @@ static size_t cst_run_test_category(const char *name, size_t *failed)
 {
 	size_t	tests = 0;
 
+	printf("\n");
+	cst_run_runnables(CST_BEFORE_ALL, name);
 	if (name[0] != '\0')
-		printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", name);
+		printf(CST_BBLUE "%s" CST_GRAY ":" CST_RES "\n", name);
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
 		if (strcmp(name, test->category) == 0) {
 			if (!cst_run_test(test))
@@ -215,6 +229,7 @@ static void	cst_run_tests()
 	size_t	failed = 0;
 	size_t	total = 0;
 
+	cst_run_runnables(CST_BEFORE_ALL, NULL);
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
 		total++;
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next)
