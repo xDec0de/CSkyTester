@@ -195,35 +195,31 @@ static bool cst_run_test(cst_test *test)
 	}
 }
 
+static size_t cst_run_test_category(const char *name, size_t *failed)
+{
+	size_t	tests = 0;
+
+	if (name[0] != '\0')
+		printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", name);
+	for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
+		if (strcmp(name, test->category) == 0) {
+			if (!cst_run_test(test))
+				(*failed)++;
+			tests++;
+		}
+	}
+}
+
 static void	cst_run_tests()
 {
-	char	*cat = NULL;
-	size_t	remaining = 0;
 	size_t	failed = 0;
 	size_t	total = 0;
 
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
-		remaining++;
-	total = remaining;
-	while (remaining != 0) {
-		cat = NULL;
-		for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
-			if (test->executed)
-				continue;
-			if (cat == NULL) {
-				cat = (char *) test->category;
-				if (cat[0] != '\0')
-					printf(CST_BBLUE "\n%s" CST_GRAY ":" CST_RES "\n", cat);
-				if (!cst_run_test(test))
-					failed++;
-				remaining--;
-			} else if (strcmp(cat, test->category) == 0) {
-				if (!cst_run_test(test))
-					failed++;
-				remaining--;
-			}
-		}
-	}
+		total++;
+	for (cst_test *test = CST_TESTS; test != NULL; test = test->next)
+		if (!test->executed)
+			cst_run_test_category(test->category, &failed);
 	if (failed == 0)
 		printf(CST_BGREEN "\n✅ All %zu tests passed!", total);
 	else
