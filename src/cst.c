@@ -222,6 +222,7 @@ static size_t cst_run_test_category(const char *name, size_t *failed)
 			tests++;
 		}
 	}
+	cst_run_hook(CST_AFTER_ALL, name);
 }
 
 static void	cst_run_tests()
@@ -235,6 +236,7 @@ static void	cst_run_tests()
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next)
 		if (!test->executed)
 			cst_run_test_category(test->category, &failed);
+	cst_run_hook(CST_AFTER_ALL, NULL);
 	if (failed == 0)
 		printf(CST_BGREEN "\n✅ All %zu tests passed!", total);
 	else

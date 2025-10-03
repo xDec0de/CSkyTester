@@ -95,7 +95,7 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 } while (0)
 
 /*
- - Runnables - Before all
+ - Hooks - Before all
  */
 
 void cst_register_before_all(const char *category, void (*func)(void));
@@ -109,6 +109,22 @@ void cst_register_before_all(const char *category, void (*func)(void));
 	static void __CST_STRCAT(__cst_fn_, id)(void)
 
 #define CST_BEFORE_ALL(category) __CST_BEFORE_ALL_IMPL((category), __COUNTER__)
+
+/*
+ - Hooks - After all
+ */
+
+void cst_register_after_all(const char *category, void (*func)(void));
+
+#define __CST_AFTER_ALL_IMPL(category, id) \
+	static void __CST_STRCAT(__cst_fn_, id)(void); \
+	static void __attribute__((constructor)) \
+	__CST_STRCAT(__cst_ctor_, id)(void) { \
+		cst_register_after_all((category), __CST_STRCAT(__cst_fn_, id)); \
+	} \
+	static void __CST_STRCAT(__cst_fn_, id)(void)
+
+#define CST_AFTER_ALL(category) __CST_AFTER_ALL_IMPL((category), __COUNTER__)
 
 /*
  - Assertions - NULL
