@@ -233,6 +233,7 @@ static void	cst_run_tests()
 	cst_run_hook(CST_BEFORE_ALL, NULL);
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
 		total++;
+	cst_run_test_category("", &failed);
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next)
 		if (!test->executed)
 			cst_run_test_category(test->category, &failed);
