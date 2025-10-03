@@ -21,19 +21,19 @@ typedef struct cst_test
 	struct cst_test	*next;
 }	cst_test;
 
-typedef struct cst_runnable
+typedef struct cst_hook
 {
 	const char			*category;
 	void				(*func)(void);
-	struct cst_runnable *next;
-}	cst_runnable;
+	struct cst_hook *next;
+}	cst_hook;
 
 static size_t		CST_START_DATE = ULONG_MAX;
 static cst_test		*CST_TESTS = NULL;
-static cst_runnable	*CST_AFTER_ALL = NULL;
-static cst_runnable	*CST_AFTER_EACH = NULL;
-static cst_runnable	*CST_BEFORE_ALL = NULL;
-static cst_runnable	*CST_BEFORE_EACH = NULL;
+static cst_hook	*CST_AFTER_ALL = NULL;
+static cst_hook	*CST_AFTER_EACH = NULL;
+static cst_hook	*CST_BEFORE_ALL = NULL;
+static cst_hook	*CST_BEFORE_EACH = NULL;
 static bool			CST_MEMCHECK = true;
 static bool			CST_SIGHANDLER = true;
 static bool			CST_ON_TEST = false;
@@ -157,15 +157,15 @@ static void	*cst_malloc(size_t size)
  - Test execution
  */
 
-static void cst_run_runnables(cst_runnable *lst, const char *category)
+static void cst_run_hook(cst_hook *lst, const char *category)
 {
-	for (cst_runnable *runnable = lst; runnable != NULL; runnable = runnable->next) {
-		if (category == NULL && runnable->category != NULL)
+	for (cst_hook *hook = lst; hook != NULL; hook = hook->next) {
+		if (category == NULL && hook->category != NULL)
 			continue;
-		if (runnable->category == NULL && category != NULL)
+		if (hook->category == NULL && category != NULL)
 			continue;
-		if ((runnable->category == NULL && category == NULL) || strcmp(runnable->category, category) == 0)
-			runnable->func();
+		if ((hook->category == NULL && category == NULL) || strcmp(hook->category, category) == 0)
+			hook->func();
 	}
 }
 
@@ -212,7 +212,7 @@ static size_t cst_run_test_category(const char *name, size_t *failed)
 	size_t	tests = 0;
 
 	printf("\n");
-	cst_run_runnables(CST_BEFORE_ALL, name);
+	cst_run_hook(CST_BEFORE_ALL, name);
 	if (name[0] != '\0')
 		printf(CST_BBLUE "%s" CST_GRAY ":" CST_RES "\n", name);
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
@@ -229,7 +229,7 @@ static void	cst_run_tests()
 	size_t	failed = 0;
 	size_t	total = 0;
 
-	cst_run_runnables(CST_BEFORE_ALL, NULL);
+	cst_run_hook(CST_BEFORE_ALL, NULL);
 	for (cst_test *tmp = CST_TESTS; tmp != NULL; tmp = tmp->next)
 		total++;
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next)
@@ -243,21 +243,21 @@ static void	cst_run_tests()
 }
 
 /*
- - Runnable registration
+ - Hook registration
  */
 
-static cst_runnable *cst_register_runnable(cst_runnable *lst, const char *category, void (*func)(void))
+static cst_hook *cst_register_hook(cst_hook *lst, const char *category, void (*func)(void))
 {
-	cst_runnable	*fixture;
+	cst_hook	*fixture;
 
-	fixture = cst_malloc(sizeof(cst_runnable));
+	fixture = cst_malloc(sizeof(cst_hook));
 	fixture->category = category;
 	fixture->func = func;
 	fixture->next = NULL;
 	if (lst == NULL)
 		return (fixture);
 	else {
-		for (cst_runnable *tmp = lst; true; tmp = tmp->next) {
+		for (cst_hook *tmp = lst; true; tmp = tmp->next) {
 			if (tmp->next == NULL) {
 				tmp->next = fixture;
 				break;
@@ -269,22 +269,22 @@ static cst_runnable *cst_register_runnable(cst_runnable *lst, const char *catego
 
 void cst_register_after_all(const char *category, void (*func)(void))
 {
-	CST_AFTER_ALL = cst_register_runnable(CST_AFTER_ALL, category, func);
+	CST_AFTER_ALL = cst_register_hook(CST_AFTER_ALL, category, func);
 }
 
 void cst_register_after_each(const char *category, void (*func)(void))
 {
-	CST_AFTER_EACH = cst_register_runnable(CST_AFTER_EACH, category, func);
+	CST_AFTER_EACH = cst_register_hook(CST_AFTER_EACH, category, func);
 }
 
 void cst_register_before_all(const char *category, void (*func)(void))
 {
-	CST_BEFORE_ALL = cst_register_runnable(CST_BEFORE_ALL, category, func);
+	CST_BEFORE_ALL = cst_register_hook(CST_BEFORE_ALL, category, func);
 }
 
 void cst_register_before_each(const char *category, void (*func)(void))
 {
-	CST_BEFORE_EACH = cst_register_runnable(CST_BEFORE_EACH, category, func);
+	CST_BEFORE_EACH = cst_register_hook(CST_BEFORE_EACH, category, func);
 }
 
 /*
