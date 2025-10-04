@@ -192,9 +192,11 @@ static size_t cst_run_test_category(const char *name, size_t *failed)
 	for (cst_test *test = CST_TESTS; test != NULL; test = test->next) {
 		if (strcmp(name, test->category) == 0) {
 			cst_run_hook(CST_BEFORE_EACH, name);
+			cst_run_hook(CST_BEFORE_EACH, NULL);
 			if (!cst_run_test(test))
 				(*failed)++;
 			cst_run_hook(CST_AFTER_EACH, name);
+			cst_run_hook(CST_AFTER_EACH, NULL);
 			tests++;
 		}
 	}
