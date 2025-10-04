@@ -75,6 +75,8 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
  - Shared assertion logic
  */
 
+void	cst_exit(char *errmsg, int ec);
+
 #define CST_ASSERT(expr, func, errmsg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
@@ -91,7 +93,7 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
 	fprintf(stderr, "\n"CST_RES);\
 	CST_FAIL_TIP = NULL;\
-	exit(EXIT_FAILURE);\
+	cst_exit(NULL, EXIT_FAILURE);\
 } while (0)
 
 /*

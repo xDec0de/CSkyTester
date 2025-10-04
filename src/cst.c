@@ -61,7 +61,7 @@ static cst_hook *cst_free_hook(cst_hook *lst)
 	return (NULL);
 }
 
-static void	cst_exit(char *errmsg, int ec)
+void	cst_exit(char *errmsg, int ec)
 {
 	if (CST_TESTS != NULL) {
 		for (cst_test *test = CST_TESTS, *tmp; test != NULL; test = tmp) {
