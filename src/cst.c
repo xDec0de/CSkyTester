@@ -23,21 +23,21 @@ typedef struct cst_test
 
 typedef struct cst_hook
 {
-	const char			*category;
-	void				(*func)(void);
-	struct cst_hook *next;
+	const char		*category;
+	void			(*func)(void);
+	struct cst_hook	*next;
 }	cst_hook;
 
-static size_t		CST_START_DATE = ULONG_MAX;
-static cst_test		*CST_TESTS = NULL;
+static size_t	CST_START_DATE = ULONG_MAX;
+static cst_test	*CST_TESTS = NULL;
 static cst_hook	*CST_AFTER_ALL = NULL;
 static cst_hook	*CST_AFTER_EACH = NULL;
 static cst_hook	*CST_BEFORE_ALL = NULL;
 static cst_hook	*CST_BEFORE_EACH = NULL;
-static bool			CST_MEMCHECK = true;
-static bool			CST_SIGHANDLER = true;
-static bool			CST_ON_TEST = false;
-static long			CST_TIMEOUT_MS = 0;
+static bool		CST_MEMCHECK = true;
+static bool		CST_SIGHANDLER = true;
+static bool		CST_ON_TEST = false;
+static long		CST_TIMEOUT_MS = 0;
 
 /*
  - Test configuration
@@ -69,37 +69,14 @@ static void	cst_exit(char *errmsg, int ec)
  - Signal handler
  */
 
-char *cst_getsigname(int signum)
-{
-	if (signum == SIGABRT)
-		return ("SIGABRT");
-	if (signum == SIGFPE)
-		return ("SIGFPE");
-	if (signum == SIGILL)
-		return ("SIGILL");
-	if (signum == SIGINT)
-		return ("SIGINT");
-	if (signum == SIGSEGV)
-		return ("SIGSEGV / Segmentation fault");
-	if (signum == SIGTERM)
-		return ("SIGTERM");
-	if (signum == SIGBUS)
-		return ("SIGBUS");
-	if (signum == SIGQUIT)
-		return ("SIGQUIT");
-	if (signum == SIGHUP)
-		return ("SIGHUP");
-	return ("???");
-}
-
-void cst_sighandler(int signum)
+static void cst_sighandler(int signum)
 {
 	if (signum == SIGINT || signum == SIGTERM || signum == SIGQUIT || signum == SIGHUP) {
 		if (!CST_ON_TEST)
-			printf(CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, cst_getsigname(signum));
+			printf(CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, strsignal(signum));
 	} else {
 		fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
-			CST_TEST_NAME, signum, cst_getsigname(signum));
+			CST_TEST_NAME, signum, strsignal(signum));
 	}
 	cst_exit(NULL, EXIT_FAILURE);
 }
@@ -111,14 +88,12 @@ static void cst_init_sighandler(void)
 	if (handling)
 		return;
 	handling = true;
-
 	// Crash signals
 	signal(SIGABRT, cst_sighandler);
 	signal(SIGFPE,  cst_sighandler);
 	signal(SIGILL,  cst_sighandler);
 	signal(SIGSEGV, cst_sighandler);
 	signal(SIGBUS,  cst_sighandler);
-
 	// Interruptions / terminations
 	signal(SIGINT,  cst_sighandler);
 	signal(SIGTERM, cst_sighandler);
