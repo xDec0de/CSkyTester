@@ -9,6 +9,10 @@ offers built-in tools like crash detection, it is by no means a replacement
 to other tools such as valgrind or ASan. CST's goal is to provide tools to
 quickly test your project **without any dependencies**.
 
+CST complies with the GNU C99 standard (`-std=gnu99`),
+meaning it is based on ISO C99 with GCC extensions and the GNU libc (glibc).
+It requires only a C compiler such as GCC or Clang, and **no external dependencies**.
+
 # Main features
 
 Even if CST isn't a replacement for other tools, it still comes with some

@@ -1,4 +1,3 @@
-
 #include "cst.h"
 #include <stdbool.h>
 #include <time.h>
@@ -62,7 +61,7 @@ static void	cst_exit(char *errmsg, int ec)
 	}
 	if (errmsg != NULL)
 		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
-	exit(ec);
+	_exit(ec);
 }
 
 /*
@@ -73,7 +72,7 @@ static void cst_sighandler(int signum)
 {
 	if (signum == SIGINT || signum == SIGTERM || signum == SIGQUIT || signum == SIGHUP) {
 		if (!CST_ON_TEST)
-			printf(CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, strsignal(signum));
+			fprintf(stderr, CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, strsignal(signum));
 	} else {
 		fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
 			CST_TEST_NAME, signum, strsignal(signum));
