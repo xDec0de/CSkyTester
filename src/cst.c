@@ -50,6 +50,17 @@ bool	CST_SHOW_FAIL_DETAILS	= true;
  - Program exit util
  */
 
+static cst_hook *cst_free_hook(cst_hook *lst)
+{
+	if (lst == NULL)
+		return (NULL);
+	for (cst_hook *hook = lst, *tmp; hook != NULL; hook = tmp) {
+		tmp = hook->next;
+		free(hook);
+	}
+	return (NULL);
+}
+
 static void	cst_exit(char *errmsg, int ec)
 {
 	if (CST_TESTS != NULL) {
@@ -59,6 +70,10 @@ static void	cst_exit(char *errmsg, int ec)
 		}
 		CST_TESTS = NULL;
 	}
+	CST_AFTER_ALL = cst_free_hook(CST_AFTER_ALL);
+	CST_AFTER_EACH = cst_free_hook(CST_AFTER_EACH);
+	CST_BEFORE_ALL = cst_free_hook(CST_BEFORE_ALL);
+	CST_BEFORE_EACH = cst_free_hook(CST_BEFORE_EACH);
 	if (errmsg != NULL)
 		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
 	_exit(ec);
