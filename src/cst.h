@@ -111,6 +111,22 @@ void cst_register_before_all(const char *category, void (*func)(void));
 #define CST_BEFORE_ALL(category) __CST_BEFORE_ALL_IMPL((category), __COUNTER__)
 
 /*
+ - Hooks - Before all
+ */
+
+void cst_register_before_each(const char *category, void (*func)(void));
+
+#define __CST_BEFORE_EACH_IMPL(category, id) \
+	static void __CST_STRCAT(__cst_fn_, id)(void); \
+	static void __attribute__((constructor)) \
+	__CST_STRCAT(__cst_ctor_, id)(void) { \
+		cst_register_before_each((category), __CST_STRCAT(__cst_fn_, id)); \
+	} \
+	static void __CST_STRCAT(__cst_fn_, id)(void)
+
+#define CST_BEFORE_EACH(category) __CST_BEFORE_EACH_IMPL((category), __COUNTER__)
+
+/*
  - Hooks - After all
  */
 

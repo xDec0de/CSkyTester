@@ -12,11 +12,15 @@ CST_AFTER_ALL(NULL) {
 }
 
 CST_BEFORE_ALL(category) {
-	printf(CST_BLUE"This runs BEFORE ALL tests in the \"Tests for built-in tools\" category"CST_RES"\n");
+	printf(CST_BLUE"This runs BEFORE ALL tests in the \"%s\" category"CST_RES"\n", category);
+}
+
+CST_BEFORE_EACH(category) {
+	printf(CST_BLUE"This runs BEFORE EACH test in the \"%s\" category"CST_RES"\n", category);
 }
 
 CST_AFTER_ALL(category) {
-	printf(CST_BLUE"This runs AFTER ALL tests in the \"Tests for built-in tools\" category"CST_RES"\n");
+	printf(CST_BLUE"This runs AFTER ALL tests in the \"%s\" category"CST_RES"\n", category);
 }
 
 TEST(category, "Force SIGSEGV") {
