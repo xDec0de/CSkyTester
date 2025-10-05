@@ -9,8 +9,8 @@ offers built-in tools like crash detection, it is by no means a replacement
 to other tools such as valgrind or ASan. CST's goal is to provide tools to
 quickly test your project **without any dependencies**.
 
-CST complies with the GNU C99 standard (`-std=gnu99`),
-meaning it is based on ISO C99 with GCC extensions and the GNU libc (glibc).
+CST complies with the **GNU C99** standard (`-std=gnu99`),
+meaning it is based on **ISO C99** with GCC extensions and the GNU libc *(glibc)*.
 It requires only a C compiler such as GCC or Clang, and **no external dependencies**.
 
 # Main features
@@ -31,6 +31,8 @@ The macro takes two arguments:
   functions for tests, but adding a name for your tests is highly recommended.
   You can of course use `NULL` if you don't want to name your test.
 
+**Detailed docs page**: [here](https://docs.codersky.net/cst/creating-your-tests).
+
 ## Assertions
 
 Obviously, CST comes with a lot of assertions to test your project. Assertions
@@ -43,6 +45,8 @@ variables:
 - **CST_FAIL_TIP**: Additional tip to show if an assertion fails. By default, it is
   set to `NULL` (No tip). Resets to `NULL` when any assertion occurs.
 
+**Detailed docs page**: [here](https://docs.codersky.net/cst/creating-your-tests/assertions).
+
 ## Crash detection
 
 CST comes with a built-in test crash detection system. It listens to known
@@ -50,6 +54,21 @@ signals that are thrown when a program crashes, intercepts them, and gives
 you some details about it.
 
 **How to disable**: `-nosig` or `-nosignal` flag.
+**Detailed docs page**: [here](https://docs.codersky.net/cst/crash-detection).
+
+## Lifecycle hooks
+
+CST offers some macros to hook on its lifecycle. These macros are:
+
+- **CST_BEFORE_ALL**: Executed **before** all tests on a category or CST itself.
+- **CST_AFTER_ALL**: Executed **after** all tests on a category or CST itself.
+- **CST_BEFORE_EACH**: Executed **before** each test on a category, or all tests.
+- **CST_AFTER_EACH**: Executed **after** each test on a category, or all tests.
+
+Lifecycle hooks are executed on the main process of CST, so changes done in them
+affect the whole test run.
+
+**Detailed docs page**: [here](https://docs.codersky.net/cst/lifecycle-hooks).
 
 ### Planned features
 
@@ -58,4 +77,3 @@ you some details about it.
   If I come up with a solution for this, it will be implemented.
 - **Traces for crash detection**: Currently, CST only says "Oh, your test has
   crashed" with a smile and lets you figure out why, not ideal.
-- **Test fixtures**: Such as AFTER_EACH, BEFORE_EACH and so on.
