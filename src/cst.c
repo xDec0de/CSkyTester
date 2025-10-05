@@ -143,8 +143,9 @@ static void	*cst_malloc(size_t size)
 
 	ptr = malloc(size);
 	if (ptr != NULL)
-		return ptr;
+		return (ptr);
 	cst_exit("Malloc failed", 100);
+	return (NULL);
 }
 
 /*
@@ -192,7 +193,7 @@ static bool cst_run_test(cst_test *test)
 				cst_exit("waitpid failed", 3);
 			else if (res > 0)
 				return (ec == 0);
-			if ((cst_now_ms() - start) >= test->timeout) {
+			if ((cst_now_ms() - start) >= (size_t) test->timeout) {
 				kill(pid, SIGKILL);
 				waitpid(pid, &ec, 0);
 				printf(CST_BRED"❌ %s "CST_GRAY"-"CST_RED" Timed out (%ld ms)\n"CST_RES, test->name, test->timeout);
@@ -203,10 +204,8 @@ static bool cst_run_test(cst_test *test)
 	}
 }
 
-static size_t cst_run_test_category(const char *name, size_t *failed)
+static void cst_run_test_category(const char *name, size_t *failed)
 {
-	size_t	tests = 0;
-
 	printf("\n");
 	cst_run_hook(CST_BEFORE_ALL, name);
 	if (name[0] != '\0')
@@ -219,7 +218,6 @@ static size_t cst_run_test_category(const char *name, size_t *failed)
 				(*failed)++;
 			cst_run_hook(CST_AFTER_EACH, name);
 			cst_run_hook(CST_AFTER_EACH, NULL);
-			tests++;
 		}
 	}
 	cst_run_hook(CST_AFTER_ALL, name);
