@@ -61,7 +61,7 @@ static cst_hook *cst_free_hook(cst_hook *lst)
 	return (NULL);
 }
 
-void	cst_exit(char *errmsg, int ec)
+static void cst_free(void)
 {
 	if (CST_TESTS != NULL) {
 		for (cst_test *test = CST_TESTS, *tmp; test != NULL; test = tmp) {
@@ -74,6 +74,11 @@ void	cst_exit(char *errmsg, int ec)
 	CST_AFTER_EACH = cst_free_hook(CST_AFTER_EACH);
 	CST_BEFORE_ALL = cst_free_hook(CST_BEFORE_ALL);
 	CST_BEFORE_EACH = cst_free_hook(CST_BEFORE_EACH);
+}
+
+static void	cst_exit(char *errmsg, int ec)
+{
+	cst_free();
 	if (errmsg != NULL)
 		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
 	_exit(ec);
@@ -165,10 +170,12 @@ static bool cst_run_test(cst_test *test)
 	if (pid == -1)
 		cst_exit("Failed to fork", 2);
 	if (pid == 0) {
+		void (*func)(void) = test->func;
 		CST_ON_TEST = true;
 		CST_TEST_NAME = (char *) test->name;
-		test->func();
-		cst_exit(NULL, EXIT_SUCCESS);
+		cst_free();
+		func();
+		_exit(EXIT_SUCCESS);
 	} else {
 		int ec = 0;
 		test->executed = true;

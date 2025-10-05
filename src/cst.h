@@ -72,31 +72,6 @@ void cst_register_test(const char *category, const char *name, long timeout, voi
 #define TEST(...) __CST_GET_MACRO(__VA_ARGS__, __CST_TEST3, __CST_TEST2)(__VA_ARGS__)
 
 /*
- - Shared assertion logic
- */
-
-void	cst_exit(char *errmsg, int ec);
-
-#define CST_ASSERT(expr, func, errmsg) do {\
-	if ((expr)) {\
-		CST_FAIL_TIP = NULL;\
-		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
-		break ;\
-	}\
-	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
-	if (CST_SHOW_FAIL_DETAILS) {\
-		fprintf(stderr, CST_GRAY": "CST_RED);\
-		errmsg;\
-		fprintf(stderr, " from %s", #func);\
-	}\
-	if (CST_FAIL_TIP != NULL)\
-		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
-	fprintf(stderr, "\n"CST_RES);\
-	CST_FAIL_TIP = NULL;\
-	cst_exit(NULL, EXIT_FAILURE);\
-} while (0)
-
-/*
  - Hooks - Before all
  */
 
@@ -159,6 +134,29 @@ void cst_register_after_each(const char *category, void (*func)(void));
 	static void __CST_STRCAT(__cst_fn_, id)(void)
 
 #define CST_AFTER_EACH(category) __CST_AFTER_EACH_IMPL((category), __COUNTER__)
+
+/*
+ - Shared assertion logic
+ */
+
+#define CST_ASSERT(expr, func, errmsg) do {\
+	if ((expr)) {\
+		CST_FAIL_TIP = NULL;\
+		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
+		break ;\
+	}\
+	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
+	if (CST_SHOW_FAIL_DETAILS) {\
+		fprintf(stderr, CST_GRAY": "CST_RED);\
+		errmsg;\
+		fprintf(stderr, " from %s", #func);\
+	}\
+	if (CST_FAIL_TIP != NULL)\
+		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
+	fprintf(stderr, "\n"CST_RES);\
+	CST_FAIL_TIP = NULL;\
+	exit(EXIT_FAILURE);\
+} while (0)
 
 /*
  - Assertions - NULL
