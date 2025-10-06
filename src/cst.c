@@ -7,8 +7,17 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/wait.h>
-#include <signal.h>
 #include <ctype.h>
+
+/*
+ - cst_sighandler.c
+ */
+
+void	cst_init_sighandler(void);
+
+/*
+ - Internal data
+ */
 
 typedef struct cst_test
 {
@@ -39,12 +48,17 @@ static bool		CST_ON_TEST = false;
 static long		CST_TIMEOUT_MS = 0;
 
 /*
- - Test configuration
+ - Exposed variables
  */
 
 char	*CST_TEST_NAME			= "";
 char	*CST_FAIL_TIP			= NULL;
 bool	CST_SHOW_FAIL_DETAILS	= true;
+
+bool	cst_is_on_test(void)
+{
+	return CST_ON_TEST;
+}
 
 /*
  - Program exit util
@@ -82,42 +96,6 @@ static void	cst_exit(char *errmsg, int ec)
 	if (errmsg != NULL)
 		printf(CST_RED"CST Error"CST_GRAY": "CST_BRED"%s"CST_RES"\n", errmsg);
 	_exit(ec);
-}
-
-/*
- - Signal handler
- */
-
-static void cst_sighandler(int signum)
-{
-	if (signum == SIGINT || signum == SIGTERM || signum == SIGQUIT || signum == SIGHUP) {
-		if (!CST_ON_TEST)
-			fprintf(stderr, CST_BRED"❌ CST terminated by signal %i (%s)\n"CST_RES, signum, strsignal(signum));
-	} else {
-		fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
-			CST_TEST_NAME, signum, strsignal(signum));
-	}
-	cst_exit(NULL, EXIT_FAILURE);
-}
-
-static void cst_init_sighandler(void)
-{
-	static bool handling = false;
-
-	if (handling)
-		return;
-	handling = true;
-	// Crash signals
-	signal(SIGABRT, cst_sighandler);
-	signal(SIGFPE,  cst_sighandler);
-	signal(SIGILL,  cst_sighandler);
-	signal(SIGSEGV, cst_sighandler);
-	signal(SIGBUS,  cst_sighandler);
-	// Interruptions / terminations
-	signal(SIGINT,  cst_sighandler);
-	signal(SIGTERM, cst_sighandler);
-	signal(SIGQUIT, cst_sighandler);
-	signal(SIGHUP,  cst_sighandler);
 }
 
 /*

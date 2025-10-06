@@ -8,8 +8,15 @@ LIBDIR = $(DIR)/lib
 INCDIR = $(DIR)/include
 BINDIR = $(DIR)/bin
 
-SRC = src/cst.c
-OBJ = cst.o
+SRC_DIR = ./src
+OBJ_DIR = ./objs
+
+SRCS =	cst.c \
+		cst_sighandler.c
+SRCS := $(addprefix $(SRC_DIR)/, $(SRCS))
+
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
 STATIC = libcst.a
 SHARED = libcst.so
 
@@ -21,15 +28,16 @@ CFLAGS = -std=gnu99 -O2 -fPIC -Wall -Wextra -Werror
 all: $(STATIC) $(SHARED)
 	@echo "✅ Build complete"
 
-$(OBJ): $(SRC)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
 	@echo "🔧 Compiling $<..."
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-$(STATIC): $(OBJ)
+$(STATIC): $(OBJS)
 	@echo "📦 Creating static library..."
 	@ar rcs $@ $^
 
-$(SHARED): $(OBJ)
+$(SHARED): $(OBJS)
 	@echo "📦 Creating shared library..."
 	@$(CC) -shared -o $@ $^
 
@@ -58,6 +66,6 @@ uninstall:
 
 clean:
 	@echo "🧽 Cleaning build artifacts..."
-	@rm -f $(OBJ) $(STATIC) $(SHARED)
+	@rm -f $(OBJS) $(STATIC) $(SHARED)
 
 .PHONY: all install uninstall clean debug release
