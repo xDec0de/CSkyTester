@@ -13,6 +13,8 @@
 /* fabsf, fabs & fabsl */
 #include <math.h>
 
+#define CST_VERSION "1.0.0"
+
 /* Global variables for configuration */
 
 extern char	*CST_TEST_NAME;
