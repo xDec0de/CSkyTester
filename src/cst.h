@@ -13,12 +13,6 @@
 /* fabsf, fabs & fabsl */
 #include <math.h>
 
-/* Custom test name macros with fallback */
-
-#ifndef CST_FILE
-# define CST_FILE "???"
-#endif
-
 /* Global variables for configuration */
 
 extern char	*CST_TEST_NAME;
