@@ -75,5 +75,3 @@ affect the whole test run.
 - **Memory leak detection**: I already have a working-ish version of this, but
   it requires the user to compile with some specific flags, which I don't like.
   If I come up with a solution for this, it will be implemented.
-- **Traces for crash detection**: Currently, CST only says "Oh, your test has
-  crashed" with a smile and lets you figure out why, not ideal.

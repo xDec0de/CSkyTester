@@ -12,7 +12,8 @@ SRC_DIR = ./src
 OBJ_DIR = ./objs
 
 SRCS =	cst.c \
-		cst_sighandler.c
+		cst_sighandler.c \
+		cst_backtrace.c
 SRCS := $(addprefix $(SRC_DIR)/, $(SRCS))
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)

@@ -41,6 +41,29 @@ extern bool	CST_SHOW_FAIL_DETAILS;
 extern char	*CST_FAIL_TIP;
 
 /*
+ - Backtraces
+ */
+
+#ifndef CST_MAX_BT
+# define CST_MAX_BT 32
+#endif
+
+#ifndef CST_PATH_MAX
+# define CST_PATH_MAX 1024
+#endif
+
+typedef struct cst_backtrace {
+	int size;
+	void *addrs[CST_MAX_BT];
+} cst_backtrace;
+
+void cst_bt_capture(cst_backtrace *bt, int skip);
+
+void cst_bt_print(const cst_backtrace *bt);
+
+void cst_bt_print_current(int skip);
+
+/*
  - Test registration
  */
 

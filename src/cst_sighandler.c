@@ -21,6 +21,7 @@ static void cst_sighandler(int signum)
 	} else {
 		fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Crashed with signal %i (%s)\n"CST_RES,
 			CST_TEST_NAME, signum, strsignal(signum));
+		cst_bt_print_current(2);
 	}
 	_exit(EXIT_FAILURE);
 }

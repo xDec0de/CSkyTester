@@ -7,7 +7,7 @@ CST_BIN = $(CURDIR)/cst
 
 PROJ_SRCS := $(shell find $(SRCS_DIR) -type f -name '*.c')
 TEST_SRCS := $(shell find $(TEST_DIR) -type f -name '*.c')
-CST_SRCS  := $(CST_DIR)/cst.c
+CST_SRCS  := $(CST_DIR)/cst.c $(CST_DIR)/cst_sighandler.c $(CST_DIR)/cst_backtrace.c
 
 ALL_SRCS  := $(PROJ_SRCS) $(TEST_SRCS) $(CST_SRCS)
 
