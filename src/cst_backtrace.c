@@ -7,7 +7,12 @@
 #include <unistd.h>
 #include <dlfcn.h>
 
-void cst_bt_capture(cst_backtrace *bt, int skip) {
+typedef struct cst_backtrace {
+	int size;
+	void *addrs[CST_MAX_BT];
+} cst_backtrace;
+
+static void cst_bt_capture(cst_backtrace *bt, int skip) {
 	if (bt == NULL)
 		return;
 	int n = backtrace(bt->addrs, CST_MAX_BT);
@@ -65,7 +70,7 @@ static bool print_addr_module(void *addr) {
 	return false;
 }
 
-void cst_bt_print(const cst_backtrace *bt) {
+static void cst_bt_print(const cst_backtrace *bt) {
 	if (bt == NULL || bt->size == 0) {
 		fprintf(stderr, "  <no backtrace>\n");
 		return;
@@ -85,6 +90,8 @@ void cst_bt_print(const cst_backtrace *bt) {
 }
 
 void cst_bt_print_current(int skip) {
+	if (!CST_DO_BACKTRACE)
+		return ;
 	cst_backtrace bt = {0};
 	cst_bt_capture(&bt, skip + 1);
 	cst_bt_print(&bt);

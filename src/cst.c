@@ -54,6 +54,7 @@ static long		CST_TIMEOUT_MS = 0;
 char	*CST_TEST_NAME			= "";
 char	*CST_FAIL_TIP			= NULL;
 bool	CST_SHOW_FAIL_DETAILS	= true;
+bool	CST_DO_BACKTRACE		= true;
 
 bool	cst_is_on_test(void)
 {
@@ -316,6 +317,8 @@ int main(int argc, char **argv)
 		char *arg = argv[i];
 		if (strcmp(arg, "-nomem") == 0 || strcmp(arg, "-nomemcheck") == 0)
 			CST_MEMCHECK = false;
+		else if (strcmp(arg, "-nobt") == 0 || strcmp(arg, "-nobacktrace") == 0)
+			CST_DO_BACKTRACE = false;
 		else if (strcmp(arg, "-nosig") == 0 || strcmp(arg, "-nosighandler") == 0)
 			CST_SIGHANDLER = false;
 		else if (strcmp(arg, "-timeout=") == 0)
