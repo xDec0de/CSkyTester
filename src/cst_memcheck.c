@@ -265,7 +265,7 @@ void __wrap_free(void *ptr) {
 	if (ptr == NULL)
 		return;
 	if (!remove_alloc_if_present(ptr)) {
-		fprintf(stderr, "💥"CST_BRED" %s "CST_GRAY"-"CST_RED" Double free detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME, ptr);
+		fprintf(stderr, "💥"CST_BRED" %s "CST_GRAY"-"CST_RED" Double free detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
 		cst_backtrace bt = {0};
 		bt_capture(&bt, 1);
 		print_backtrace(&bt);

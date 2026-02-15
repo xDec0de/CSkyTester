@@ -171,6 +171,12 @@ void cst_register_after_each(const char *category, void (*func)(void));
 } while (0)
 
 /*
+ - Utils - Strings
+ */
+
+bool cst_str_equals(const char *s1, const char *s2);
+
+/*
  - Assertions - NULL
  */
 
@@ -403,6 +409,38 @@ void cst_register_after_each(const char *category, void (*func)(void));
 } while (0)
 
 #define ASSERT_LDOUBLE_NOT_EQUALS(expr, expected) ASSERT_LDOUBLE_NOT_EQUALS_APPROX((expr), (expected), 1e-15L)
+
+/*
+ - Assertions - String
+ */
+
+#define ASSERT_STR_EQUALS(expr, expected) do {\
+	unsigned char *cst_actual = (expr);\
+	unsigned char *cst_expected = (expected);\
+	CST_ASSERT(cst_str_equals(cst_actual, cst_expected), expr, fprintf(stderr, "Got \"%s\" when expecting \"%s\"", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_STR_EQUALS_FREE(expr, expected) do {\
+	unsigned char *cst_actual = (expr);\
+	unsigned char *cst_expected = (expected);\
+	bool cst_result = cst_str_equals(cst_actual, cst_expected);\
+	free(cst_actual);\
+	CST_ASSERT(cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting \"%s\"", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_STR_NOT_EQUALS(expr, expected) do {\
+	unsigned char *cst_actual = (expr);\
+	unsigned char *cst_expected = (expected);\
+	CST_ASSERT(!(cst_str_equals(cst_actual, cst_expected)), expr, fprintf(stderr, "Got \"%s\" when expecting NOT \"%s\"", cst_actual, cst_expected));\
+} while (0)
+
+#define ASSERT_STR_NOT_EQUALS_FREE(expr, expected) do {\
+	unsigned char *cst_actual = (expr);\
+	unsigned char *cst_expected = (expected);\
+	bool cst_result = !cst_str_equals(cst_actual, cst_expected);\
+	free(cst_actual);\
+	CST_ASSERT(cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting NOT \"%s\"", cst_actual, cst_expected));\
+} while (0)
 
 /*
  - Colors

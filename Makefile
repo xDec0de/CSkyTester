@@ -13,7 +13,10 @@ OBJ_DIR = ./objs
 
 SRCS =	cst.c \
 		cst_sighandler.c \
-		cst_backtrace.c
+		cst_backtrace.c \
+		cst_memcheck.c \
+		cst_strutil.c
+
 SRCS := $(addprefix $(SRC_DIR)/, $(SRCS))
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
