@@ -170,6 +170,27 @@ void cst_register_after_each(const char *category, void (*func)(void));
 	exit(EXIT_FAILURE);\
 } while (0)
 
+#define CST_ASSERT_FREE(ptr, expr, func, errmsg) do {\
+	if ((expr)) {\
+		CST_FAIL_TIP = NULL;\
+		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
+		free((ptr));\
+		break ;\
+	}\
+	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
+	if (CST_SHOW_FAIL_DETAILS) {\
+		fprintf(stderr, CST_GRAY": "CST_RED);\
+		errmsg;\
+		fprintf(stderr, " from %s", #func);\
+	}\
+	if (CST_FAIL_TIP != NULL)\
+		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
+	fprintf(stderr, "\n"CST_RES);\
+	CST_FAIL_TIP = NULL;\
+	free((ptr));\
+	exit(EXIT_FAILURE);\
+} while (0)
+
 /*
  - Utils - Strings
  */
@@ -424,8 +445,7 @@ bool cst_str_equals(const char *s1, const char *s2);
 	char *cst_actual = (expr);\
 	char *cst_expected = (expected);\
 	bool cst_result = cst_str_equals(cst_actual, cst_expected);\
-	free(cst_actual);\
-	CST_ASSERT(cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting \"%s\"", cst_actual, cst_expected));\
+	CST_ASSERT_FREE(cst_actual, cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting \"%s\"", cst_actual, cst_expected));\
 } while (0)
 
 #define ASSERT_STR_NOT_EQUALS(expr, expected) do {\
@@ -438,8 +458,7 @@ bool cst_str_equals(const char *s1, const char *s2);
 	char *cst_actual = (expr);\
 	char *cst_expected = (expected);\
 	bool cst_result = !cst_str_equals(cst_actual, cst_expected);\
-	free(cst_actual);\
-	CST_ASSERT(cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting NOT \"%s\"", cst_actual, cst_expected));\
+	CST_ASSERT_FREE(cst_actual, cst_result, expr, fprintf(stderr, "Got \"%s\" when expecting NOT \"%s\"", cst_actual, cst_expected));\
 } while (0)
 
 /*
