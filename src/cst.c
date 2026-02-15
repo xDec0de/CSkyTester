@@ -204,7 +204,7 @@ static void cst_run_test_category(const char *name, size_t *failed)
 	cst_run_hook(CST_AFTER_ALL, name);
 }
 
-static void	cst_run_tests()
+static int	cst_run_tests()
 {
 	size_t	failed = 0;
 	size_t	total = 0;
@@ -222,6 +222,7 @@ static void	cst_run_tests()
 	else
 		printf(CST_BRED "\n❌ Failed " CST_BYELLOW "%zu" CST_GRAY "/" CST_YELLOW "%zu" CST_BRED " test(s)", failed, total);
 	printf(CST_GRAY " - " CST_YELLOW "%zums" CST_RES "\n", (cst_now_ms() - CST_START_DATE));
+	return (failed);
 }
 
 /*
@@ -330,6 +331,5 @@ int main(int argc, char **argv)
 	}
 	if (CST_SIGHANDLER)
 		cst_init_sighandler();
-	cst_run_tests();
-	cst_exit(NULL, EXIT_SUCCESS);
+	cst_exit(NULL, cst_run_tests());
 }
