@@ -57,6 +57,29 @@ extern bool	CST_DO_BACKTRACE;
 void cst_bt_print_current(int skip);
 
 /*
+ - Memory checking
+ */
+
+void* cst_malloc_impl(size_t size, const char *file, int line);
+void* cst_calloc_impl(size_t nmemb, size_t size, const char *file, int line);
+void* cst_realloc_impl(void *ptr, size_t size, const char *file, int line);
+void cst_free_impl(void *ptr, const char *file, int line);
+
+// Manual leak checking
+bool cst_has_leaks(void);
+void cst_print_leaks(void);
+void cst_reset_memcheck(void);
+void cst_check_leaks_before_exit(void);
+
+// Override malloc/free with tracking (unless disabled)
+#ifndef CST_NO_MEMCHECK
+# define malloc(size) cst_malloc_impl(size, __FILE__, __LINE__)
+# define calloc(nmemb, size) cst_calloc_impl(nmemb, size, __FILE__, __LINE__)
+# define realloc(ptr, size) cst_realloc_impl(ptr, size, __FILE__, __LINE__)
+# define free(ptr) cst_free_impl(ptr, __FILE__, __LINE__)
+#endif
+
+/*
  - Test registration
  */
 
@@ -154,8 +177,9 @@ void cst_register_after_each(const char *category, void (*func)(void));
 #define CST_ASSERT(expr, func, errmsg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
+		cst_check_leaks_before_exit();\
 		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
-		break ;\
+		exit(EXIT_SUCCESS);\
 	}\
 	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
 	if (CST_SHOW_FAIL_DETAILS) {\
@@ -167,15 +191,17 @@ void cst_register_after_each(const char *category, void (*func)(void));
 		fprintf(stderr, CST_GRAY" - "CST_RED"%s", CST_FAIL_TIP);\
 	fprintf(stderr, "\n"CST_RES);\
 	CST_FAIL_TIP = NULL;\
+	cst_check_leaks_before_exit();\
 	exit(EXIT_FAILURE);\
 } while (0)
 
 #define CST_ASSERT_FREE(ptr, expr, func, errmsg) do {\
 	if ((expr)) {\
 		CST_FAIL_TIP = NULL;\
-		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
 		free((ptr));\
-		break ;\
+		cst_check_leaks_before_exit();\
+		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);\
+		exit(EXIT_SUCCESS);\
 	}\
 	fprintf(stderr, CST_BRED"❌ %s"CST_RED, CST_TEST_NAME);\
 	if (CST_SHOW_FAIL_DETAILS) {\
@@ -188,6 +214,7 @@ void cst_register_after_each(const char *category, void (*func)(void));
 	fprintf(stderr, "\n"CST_RES);\
 	CST_FAIL_TIP = NULL;\
 	free((ptr));\
+	cst_check_leaks_before_exit();\
 	exit(EXIT_FAILURE);\
 } while (0)
 

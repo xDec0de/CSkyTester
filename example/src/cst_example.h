@@ -7,6 +7,11 @@
 
 bool			cst_isnum(char ch);
 
+/* cst_mem.c */
+
+void			cst_force_leak(void);
+void			cst_force_double_free(void);
+
 /* cst_sum.c */
 
 int				cst_intsum(int a, int b);

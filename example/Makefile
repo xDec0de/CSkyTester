@@ -6,7 +6,7 @@ CST_BIN = $(CURDIR)/cst
 CST_LIB = $(CST_DIR)/libcst.a
 
 CC = gcc
-CFLAGS = -g3 -I$(SRCS_DIR) -I$(CST_DIR)/src
+CFLAGS = -g3 -I$(SRCS_DIR) -I$(CST_DIR)/src -include $(CST_DIR)/src/cst.h
 
 PROJ_SRCS := $(shell find $(SRCS_DIR) -type f -name '*.c' -exec basename {} \;)
 TEST_SRCS := $(shell find $(TEST_DIR) -type f -name '*.c' -exec basename {} \;)

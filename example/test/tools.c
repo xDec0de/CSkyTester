@@ -1,4 +1,5 @@
 #include "cst.h"
+#include "cst_example.h"
 #include <unistd.h>
 
 static const char *category = "Tests for built-in tools";
@@ -37,6 +38,11 @@ TEST(category, "Force double free") {
 
 	free(ptr);
 	free(ptr);
+}
+
+TEST(category, "Force double free (src)") {
+	cst_force_double_free();
+	ASSERT_NULL(NULL);
 }
 
 TEST(category, "Force memory leak (Shouldn't pass)") {

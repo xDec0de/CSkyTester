@@ -1,275 +1,190 @@
-#define _GNU_SOURCE
+#define CST_NO_MEMCHECK  // Prevent recursive macro expansion
 #include "cst.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <execinfo.h>
-#include <unistd.h>
-#include <dlfcn.h>
-
-#ifndef CST_MAX_BT
-# define CST_MAX_BT 32
-#endif
-
-#ifndef CST_PATH_MAX
-# define CST_PATH_MAX 1024
-#endif
+#include <stdbool.h>
 
 /*
- - Data structures
+ - Allocation tracking structure
  */
 
-/**
- * @brief Stores a backtrace.
- *
- * Holds up to CST_MAX_BT return addresses obtained from `backtrace()`.
- */
-typedef struct cst_backtrace {
-	// Number of captured frames
-	int size;
-	// Raw addresses
-	void *addrs[CST_MAX_BT];
-} cst_backtrace;
-
-/**
- * @brief Node in the allocation tracking linked list.
- *
- * Each node represents one malloc'd block with its size and
- * the backtrace at allocation time.
- */
-typedef struct cst_allocation {
-	// Allocated pointer
+typedef struct cst_alloc {
 	void *ptr;
-	// Allocation size in bytes
 	size_t size;
-	// Backtrace at allocation
-	cst_backtrace bt_alloc;
-	// Next node
-	struct cst_allocation *next;
-} cst_allocation;
+	const char *file;
+	int line;
+	struct cst_alloc *next;
+} cst_alloc;
 
-/** @brief Head of the allocation tracking list. */
-static cst_allocation *alloc_list = NULL;
-
-/* Real malloc/free */
-
-void *__real_malloc(size_t size);
-void __real_free(void *ptr);
+static cst_alloc *g_allocs = NULL;
+static bool g_memcheck_enabled = true;
 
 /*
- - Backtrace utils
+ - Helper: Add allocation to tracking list
  */
 
-/**
- * @brief Capture a backtrace of the current stack.
- *
- * @param bt cst_backtrace struct to fill.
- * @param skip Number of initial frames to skip (used to remove internal calls).
- */
-static void bt_capture(cst_backtrace *bt, int skip) {
-	int n = backtrace(bt->addrs, CST_MAX_BT);
-
-	if (skip > 0 && skip < n) {
-		memmove(bt->addrs, bt->addrs + skip, (n - skip) * sizeof(void *));
-		n -= skip;
-	} else if (skip >= n)
-		n = 0;
-	bt->size = n;
-}
-
-/**
- * @brief Run addr2line to resolve an address to source location.
- *
- * @param binary Path to the executable/library file.
- * @param addr   Address to resolve.
- * 
- * @return true if resolved successfully, false otherwise.
- */
-static bool resolve_with_addr2line(const char *binary, unsigned long addr) {
-	char cmd[CST_PATH_MAX];
-	snprintf(cmd, sizeof(cmd), "addr2line -f -p -e '%s' %lx 2>/dev/null", binary, addr);
-
-	FILE *fp = popen(cmd, "r");
-	if (fp == NULL)
-		return false;
-
-	char line[CST_PATH_MAX];
-	if (fgets(line, sizeof(line), fp) != NULL) {
-		size_t len = strlen(line);
-		if (len > 0 && line[len - 1] == '\n')
-			line[len - 1] = '\0';
-		fprintf(stderr, "    "CST_RED"%s"CST_RES"\n", line);
-		pclose(fp);
-		return true;
-	}
-	pclose(fp);
-	return false;
-}
-
-/**
- * @brief Print symbol and source information for a single address.
- *
- * Uses dladdr() and addr2line as fallbacks.
- *
- * @param addr Address to resolve.
- * 
- * @return true if resolved successfully, false otherwise.
- */
-static bool print_addr_module(void *addr) {
-	Dl_info info = {0};
-
-	if (!dladdr(addr, &info) || info.dli_fname == NULL || info.dli_fbase == NULL) {
-		char exep[CST_PATH_MAX];
-		ssize_t len = readlink("/proc/self/exe", exep, sizeof(exep) - 1);
-		if (len > 0)
-			exep[len] = '\0';
-		else
-			strcpy(exep, "/proc/self/exe");
-		return resolve_with_addr2line(exep, (unsigned long) addr);
-	}
-
-	unsigned long base = (unsigned long)info.dli_fbase;
-	unsigned long a_mod = (unsigned long)addr - base;
-
-	if (resolve_with_addr2line(info.dli_fname, a_mod))
-		return true;
-	if (info.dli_sname != NULL) {
-		fprintf(stderr, CST_RED"    at %s (%p)"CST_RES"\n", info.dli_sname, addr);
-		return true;
-	}
-	return false;
-}
-
-/**
- * @brief Print a captured backtrace.
- *
- * Attempts to resolve each address to file/line information.
- * Falls back to backtrace_symbols() if resolution fails.
- *
- * @param bt  Captured backtrace.
- */
-static void print_backtrace(const cst_backtrace *bt) {
-	if (bt == NULL || bt->size == 0) {
-		fprintf(stderr, "  <no backtrace>\n");
+static void track_alloc(void *ptr, size_t size, const char *file, int line)
+{
+	if (!ptr || !g_memcheck_enabled)
 		return;
+	
+	cst_alloc *node = malloc(sizeof(cst_alloc));
+	if (!node) {
+		fprintf(stderr, CST_BRED"CST: Failed to allocate tracking node\n"CST_RES);
+		exit(EXIT_FAILURE);
 	}
-	bool resolved_any = false;
-	for (int i = 0; i < bt->size; ++i)
-		if (print_addr_module(bt->addrs[i]))
-			resolved_any = true;
-	if (!resolved_any) {
-		char **syms = backtrace_symbols(bt->addrs, bt->size);
-		if (syms != NULL) {
-			for (int i = 0; i < bt->size; ++i)
-				fprintf(stderr, "    %s\n", syms[i]);
-			free(syms);
-		}
-	}
-}
-
-/*
- - Allocation tracking
- */
-
-/**
- * @brief Add a new allocation to the tracking list.
- *
- * @param ptr Pointer returned by malloc.
- * @param size Number of bytes allocated.
- * @param bt Backtrace of the allocation site.
- */
-static void add_alloc(void *ptr, size_t size, const cst_backtrace *bt) {
-	if (ptr == NULL)
-		return;
-	cst_allocation *node = (cst_allocation *)__real_malloc(sizeof(cst_allocation));
+	
 	node->ptr = ptr;
 	node->size = size;
-	node->bt_alloc = *bt;
-	node->next = alloc_list;
-	alloc_list = node;
-}
-
-/**
- * @brief Remove an allocation from the tracking list.
- *
- * @param ptr The pointer to free.
- * 
- * @return `true` if the allocation was tracked and removed, `false` otherwise.
- */
-static bool remove_alloc_if_present(void *ptr) {
-	cst_allocation *current = alloc_list;
-	cst_allocation *prev = NULL;
-
-	while (current != NULL) {
-		if (current->ptr == ptr) {
-			if (prev != NULL)
-				prev->next = current->next;
-			else
-				alloc_list = current->next;
-			__real_free(current);
-			return true;
-		}
-		prev = current;
-		current = current->next;
-	}
-	return false;
-}
-
-/**
- * @brief Report all memory leaks detected at program exit.
- *
- * Prints the size, address and backtrace of each unfreed allocation.
- * Terminates the program with `EXIT_FAILURE` if leaks are present.
- */
-__attribute__((destructor))
-static void report_leaks(void) {
-	if (alloc_list == NULL)
-		return;
-	fprintf(stderr, "💧"CST_BRED" %s "CST_GRAY"-"CST_RED" Memory leaks detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
-	for (cst_allocation *cur = alloc_list; cur != NULL; cur = cur->next) {
-		fprintf(stderr, CST_GRAY"- "CST_BRED"%zu bytes "CST_RED"allocated at"CST_GRAY":"CST_RES"\n", cur->size);
-		print_backtrace(&cur->bt_alloc);
-	}
-	exit(EXIT_FAILURE);
+	node->file = file;
+	node->line = line;
+	node->next = g_allocs;
+	g_allocs = node;
 }
 
 /*
- - Wrappers
+ - Helper: Remove allocation from tracking list
  */
 
-/**
- * @brief Malloc wrapper with allocation tracking.
- *
- * Captures a backtrace of the allocation site and stores it.
- *
- * @param size Number of bytes to allocate.
- * @return Pointer to allocated memory.
+static bool untrack_alloc(void *ptr, const char *file, int line)
+{
+	if (!ptr)
+		return true;
+	
+	if (!g_memcheck_enabled)
+		return true;
+	
+	cst_alloc **curr = &g_allocs;
+	while (*curr) {
+		if ((*curr)->ptr == ptr) {
+			cst_alloc *tmp = *curr;
+			*curr = (*curr)->next;
+			free(tmp);
+			return true;
+		}
+		curr = &(*curr)->next;
+	}
+	
+	// Not found = double free or freeing untracked memory
+	fprintf(stderr, CST_BRED"💥 %s "CST_GRAY"-"CST_RED" Double free or invalid free at %s:%d"CST_RES"\n",
+			CST_TEST_NAME, file, line);
+	exit(EXIT_FAILURE);
+	return false;
+}
+
+/*
+ - Public API: Tracked allocations
  */
-void *__wrap_malloc(size_t size) {
-	void *ptr = __real_malloc(size);
-	cst_backtrace bt = {0};
-	bt_capture(&bt, 2);
-	add_alloc(ptr, size, &bt);
+
+void* cst_malloc_impl(size_t size, const char *file, int line)
+{
+	void *ptr = malloc(size);
+	if (ptr)
+		track_alloc(ptr, size, file, line);
 	return ptr;
 }
 
-/**
- * @brief Free wrapper with double-free detection.
- *
- * Removes the allocation from tracking if present.
- * If the pointer was not tracked, reports a double free and aborts.
- *
- * @param ptr Pointer to free.
- */
-void __wrap_free(void *ptr) {
-	if (ptr == NULL)
+void* cst_calloc_impl(size_t nmemb, size_t size, const char *file, int line)
+{
+	void *ptr = calloc(nmemb, size);
+	if (ptr)
+		track_alloc(ptr, nmemb * size, file, line);
+	return ptr;
+}
+
+void* cst_realloc_impl(void *ptr, size_t size, const char *file, int line)
+{
+	if (ptr)
+		untrack_alloc(ptr, file, line);
+	
+	void *new_ptr = realloc(ptr, size);
+	if (new_ptr && size > 0)
+		track_alloc(new_ptr, size, file, line);
+	
+	return new_ptr;
+}
+
+void cst_free_impl(void *ptr, const char *file, int line)
+{
+	if (!ptr)
 		return;
-	if (!remove_alloc_if_present(ptr)) {
-		fprintf(stderr, "💥"CST_BRED" %s "CST_GRAY"-"CST_RED" Double free detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
-		cst_backtrace bt = {0};
-		bt_capture(&bt, 1);
-		print_backtrace(&bt);
-		exit(EXIT_FAILURE);
+	
+	untrack_alloc(ptr, file, line);
+	free(ptr);
+}
+
+/*
+ - Public API: Manual leak checking
+ */
+
+bool cst_has_leaks(void)
+{
+	return g_allocs != NULL;
+}
+
+void cst_print_leaks(void)
+{
+	if (!g_allocs)
+		return;  // Silent if no leaks
+	
+	size_t total_leaked = 0;
+	size_t leak_count = 0;
+	
+	fprintf(stderr, CST_BRED"💧 %s "CST_GRAY"-"CST_RED" Memory leaks detected"CST_GRAY":"CST_RES"\n", CST_TEST_NAME);
+	
+	for (cst_alloc *a = g_allocs; a; a = a->next) {
+		fprintf(stderr, CST_GRAY"  - "CST_BRED"%zu bytes "CST_RED"at %s:%d"CST_RES"\n",
+				a->size, a->file, a->line);
+		total_leaked += a->size;
+		leak_count++;
 	}
-	__real_free(ptr);
+	
+	fprintf(stderr, CST_BRED"  Total: %zu bytes in %zu allocation(s)"CST_RES"\n",
+			total_leaked, leak_count);
+}
+
+void cst_reset_memcheck(void)
+{
+	while (g_allocs) {
+		cst_alloc *tmp = g_allocs;
+		g_allocs = g_allocs->next;
+		free(tmp);
+	}
+}
+
+/*
+ - Check leaks before test exit (called explicitly)
+ */
+
+void cst_check_leaks_before_exit(void) {
+	if (!g_memcheck_enabled)
+		return;
+	
+	if (g_allocs != NULL) {
+		cst_print_leaks();
+		
+		// Clean list to avoid double reports
+		while (g_allocs) {
+			cst_alloc *tmp = g_allocs;
+			g_allocs = g_allocs->next;
+			free(tmp);
+		}
+		
+		exit(EXIT_FAILURE);  // Force test failure
+	}
+}
+
+/*
+ - Automatic leak report on abnormal exit (fallback)
+ */
+
+__attribute__((destructor))
+static void cst_report_leaks(void)
+{
+	// This only runs if the process exits without calling cst_check_leaks_before_exit
+	if (!g_memcheck_enabled || !g_allocs)
+		return;
+	
+	cst_print_leaks();
 }

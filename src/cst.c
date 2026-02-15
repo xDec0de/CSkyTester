@@ -155,6 +155,8 @@ static bool cst_run_test(cst_test *test)
 		CST_TEST_NAME = (char *) test->name;
 		cst_free();
 		func();
+		fprintf(stderr, CST_GREEN"✅ %s\n"CST_RES, CST_TEST_NAME);
+		cst_check_leaks_before_exit();
 		_exit(EXIT_SUCCESS);
 	} else {
 		int ec = 0;

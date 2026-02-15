@@ -6,7 +6,6 @@
 DIR ?= /usr/local
 LIBDIR = $(DIR)/lib
 INCDIR = $(DIR)/include
-BINDIR = $(DIR)/bin
 
 SRC_DIR = ./src
 OBJ_DIR = ./objs
@@ -30,7 +29,7 @@ CFLAGS = -std=gnu99 -O2 -fPIC -Wall -Wextra -Werror
 # === Targets ===
 
 all: $(STATIC) $(SHARED)
-	@echo "✅ Build complete"
+	@echo "✅ CST build complete"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
@@ -47,7 +46,7 @@ $(SHARED): $(OBJS)
 
 debug: CFLAGS = -std=gnu99 -g3 -O0 -fPIC -Wall -Wextra -Werror
 debug: clean all
-	@echo "🐞 Debug build complete (includes full macro info)"
+	@echo "🐞 Debug build complete"
 
 release: clean all
 	@echo "🚀 Release build complete"
@@ -70,6 +69,6 @@ uninstall:
 
 clean:
 	@echo "🧽 Cleaning build artifacts..."
-	@rm -f $(OBJS) $(STATIC) $(SHARED)
+	@rm -rf $(OBJ_DIR) $(STATIC) $(SHARED)
 
 .PHONY: all install uninstall clean debug release
